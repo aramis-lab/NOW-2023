@@ -1,2 +1,3 @@
 # NOW-2023
-Repository for the 2023 NeuroScience Open Workshop
+
+Repository for the [2023 NeuroScience Open Workshop](https://open-neuro.org/).
