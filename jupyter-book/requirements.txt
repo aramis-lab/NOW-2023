@@ -1,0 +1,5 @@
+sphinx-tabs
+sphinx-click
+myst-parser
+myst-nb
+jupyter-book
