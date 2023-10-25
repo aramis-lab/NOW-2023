@@ -13,9 +13,9 @@
 # ---
 
 # %% [markdown]
-# # Test notebook
+# # Part 1 : Code versionning using GIT
 #
-# This is a test notebook.
+# This is the first part of the tutorial on code versioning using git.
 
 # %%
 def f(x: int) -> int:
