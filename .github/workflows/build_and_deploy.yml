@@ -6,6 +6,9 @@ on:
 permissions:
   contents: read
 
+env:
+  CACHE_NUMBER: 0  # increase to reset cache manually
+
 jobs:
   build-and-deploy:
     runs-on:
@@ -13,10 +16,16 @@ jobs:
       - macOS
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache@v2
+        with:
+          key: conda-${{ hashFiles('environment.yml') }}-${{ env.CACHE_NUMBER }}
+        id: cache
+      - name: Update environment
+        run: conda env update -n now -f environment.yml
+        if: steps.cache.outputs.cache-hit != 'true'
       - name: Build jupyter book
         run: |
           source ~/miniconda3/etc/profile.d/conda.sh
-          conda env create -f environment.yml
           conda activate now
           pip install -r requirements.txt
           make
