@@ -1,0 +1,7 @@
+name: now
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10
+  - jupyterlab>=4.0.0
