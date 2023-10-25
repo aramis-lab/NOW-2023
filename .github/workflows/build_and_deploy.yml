@@ -26,5 +26,6 @@ jobs:
           make
           conda deactivate
       - name: Deploy jupyter book in webserver
+        run: |  
           ls ./
           scp -r jupyter-book/_build/html/* aramislab.paris.inria.fr:~/workshops/NOW/2023/
