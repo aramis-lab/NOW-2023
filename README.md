@@ -20,6 +20,23 @@ make
 
 This command will recreate automatically the notebooks and clean the outputs.
 
+### Build the jupyter-book
+
+You need to install the requirements:
+
+```
+$ pip install -r jupyter-book/requirements.txt
+```
+
+Then:
+
+```
+$ cd jupyter-book
+$ make
+```
+
+The HTML files are then in `jupyter-book/_build/html/`.
+
 ## External ressources
 
 - [Git training performed by the Paris SED](https://gitlab.inria.fr/git-tutorial/git-tutorial)
