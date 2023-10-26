@@ -14,7 +14,12 @@
 
 # %% [markdown]
 # # Part 2 : Data versionning using DVC
-#
+
+# %%
+import sys
+sys.path.insert(1, '../scripts/')  # hack this for now :(
+
+# %% [markdown]
 # ## Chapter 1 : Getting started with DVC
 #
 # This is the second part of the tutorial on data versionning using [DVC](https://dvc.org).
