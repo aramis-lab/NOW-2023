@@ -1,8 +1,9 @@
 # Book settings
-title: Deep learning classification from brain MRI
+title: Code and data versionning
 author: The Aramis Team
+copyright: "2023"
 logo: 'images/logoAramis.png'
-description: Tutorial for the deep learning classification from brain MRI
+description: Tutorial for code and data versionning
 
 exclude_patterns:
   -  _build
@@ -14,14 +15,14 @@ exclude_patterns:
   - "README.md"
 
 repository:
-  url: https://github.com/aramis-lab/NOW_2023
+  url: https://github.com/aramis-lab/NOW-2023
   path_to_book: jupyter-book/
   branch: main
 
 launch_buttons:
   notebook_interface: classic
   colab_url: "https://colab.research.google.com"
-  jupyterhub_url: "localhost:8080"  # The URL for your JupyterHub. (e.g., https://datahub.berkeley.edu)
+  # jupyterhub_url: "localhost:8080"  # The URL for your JupyterHub. (e.g., https://datahub.berkeley.edu)
 
 ######################################################################################
 # Execution settings
@@ -35,7 +36,7 @@ html:
   use_edit_page_button: true
   use_repository_button: true
   use_issues_button: true
-  baseurl: https://aramislab.paris.inria.fr/clinicadl/NOW2023/
+  baseurl: https://aramislab.paris.inria.fr/workshops/NOW/2023/
 
 
 sphinx:
