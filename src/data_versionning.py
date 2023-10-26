@@ -284,5 +284,7 @@ print(len(df))  # Dataset has 500 subjects
 # ! rm model.pkl*
 # ! rm -rf .git
 # ! rm -rf .dvc
+# ! rm .gitignore
+# ! rm .dvcignore
 
 # %%
