@@ -1,7 +1,8 @@
 name: Build and deploy jupyter book
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
