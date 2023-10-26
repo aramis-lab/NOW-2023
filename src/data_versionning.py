@@ -17,7 +17,7 @@
 #
 # This is the second part of the tutorial on data versionning using [DVC](https://dvc.org).
 #
-# First, we need to install DVC:
+# First, we need to install [DVC](https://dvc.org):
 
 # %%
 # ! pip install dvc
