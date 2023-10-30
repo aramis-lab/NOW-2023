@@ -15,10 +15,6 @@
 # %% [markdown]
 # # Part 2 : Data versionning using DVC
 
-# %%
-import sys
-sys.path.insert(1, '../scripts/')  # hack this for now :(
-
 # %% [markdown]
 # ## Chapter 1 : Getting started with DVC
 #
@@ -36,6 +32,8 @@ sys.path.insert(1, '../scripts/')  # hack this for now :(
 # ! pip install dvc
 
 # %% [markdown]
+# Note that if you are running this notebook on Collab, you might need to click on the "RESTART RUNTIME" button just above.
+#
 # We can check that DVC is installed:
 
 # %%
@@ -90,6 +88,13 @@ sys.path.insert(1, '../scripts/')  # hack this for now :(
 # - `.dvcignore`
 #
 # These files need to be versionned with GIT, DVC already added them to the stagging aread, so all we need to do is commit them:
+
+# %% [markdown]
+# If you are running the current notebook on Collab, or if you have never configured git before, you need to configure your user name and email address with the `git config` command. You can either use the `--global` option to configure this globally on your machine, or the `--local` option to configure this only for the current project. Note that, if you are running on Collab, it doesn't really matter as the configuration will only leave for the duration of the session:
+
+# %%
+# ! git config --local user.email "john.doe@inria.fr"
+# ! git config --local user.name "John Doe"
 
 # %%
 # ! git commit -m "initialize DVC"
@@ -147,8 +152,70 @@ df.tail()
 # Here, we use a toy model (a simple non-linear SVM), and we fit it with the data we just downloaded:
 
 # %%
-from toy_model import Model
+import pickle
+import pandas as pd
+import numpy as np
+from sklearn import svm
+import matplotlib.pyplot as plt
 
+
+class Model:
+    """Simple interface to a toy model for classification."""
+    def __init__(self, X: np.ndarray, y: np.ndarray):
+        self.X =X
+        self.y = y
+        self.min_x = np.min(self.X[:, 0])
+        self.max_x = np.max(self.X[:, 0])
+        self.min_y = np.min(self.X[:, 1])
+        self.max_y = np.max(self.X[:, 1])
+        self.estimator = svm.NuSVC(gamma="auto")
+
+    @property
+    def n_samples(self) -> int:
+        return self.X.shape[0]
+
+    @property
+    def bbox(self) -> list[float]:
+        return [self.min_x, self.max_x, self.min_y, self.max_y]
+
+    @classmethod
+    def from_dataframe(cls, df: pd.DataFrame):
+        X = np.array(df[["HC_left_volume", "HC_right_volume"]])
+        y = np.array([1 if x == "AD" else 0 for x in df["group"].values])
+        return cls(X, y)
+
+    def fit(self):
+        self.estimator.fit(self.X, self.y)
+
+    def save(self):
+        with open("model.pkl", "wb") as fp:
+            pickle.dump(self.estimator, fp)
+
+    def plot(self):
+        xx, yy = np.meshgrid(
+            np.linspace(self.min_x, self.max_x, 500),
+            np.linspace(self.min_y, self.max_y, 500),
+        )
+        Z = self.estimator.decision_function(np.c_[xx.ravel(), yy.ravel()])
+        Z = Z.reshape(xx.shape)
+        plt.imshow(
+            Z,
+            interpolation="nearest",
+            extent=(xx.min(), xx.max(), yy.min(), yy.max()),
+            aspect="auto",
+            origin="lower",
+            cmap=plt.cm.PuOr_r,
+        )
+        contours = plt.contour(xx, yy, Z, levels=[0], linewidths=2, linestyles="dashed")
+        plt.scatter(self.X[:, 0], self.X[:, 1], s=30, c=self.y, cmap=plt.cm.Paired, edgecolors="k")
+        plt.xticks(())
+        plt.yticks(())
+        plt.title(f"Number of sample = {self.n_samples}")
+        plt.axis(self.bbox)
+        plt.show()
+
+
+# %%
 model = Model.from_dataframe(df)
 model.fit()  # Fit the model
 model.save() # Serialize the trained model
