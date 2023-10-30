@@ -35,6 +35,7 @@ jobs:
           pip install -r requirements.txt
           make clean
           make
+          sed -i 's+github/aramis-lab/NOW-2023/blob/main/jupyter-book/notebooks+github/aramis-lab/NOW-2023/blob/main/notebooks+g' _build/html/notebooks/*.html
           conda deactivate
       - name: Deploy jupyter book in webserver
         run: |  
