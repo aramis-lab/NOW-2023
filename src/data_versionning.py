@@ -14,11 +14,11 @@
 
 # %% [markdown]
 # # Part 2 : Data versionning using DVC
+# This is the second part of the tutorial on code and data versionning using [GitHub](https://docs.github.com/) and [DVC](https://dvc.org).
+
 
 # %% [markdown]
 # ## Chapter 1 : Getting started with DVC
-#
-# This is the second part of the tutorial on data versionning using [DVC](https://dvc.org).
 #
 # In this first chapter, we will install DVC and take a look at how DVC works with GIT in its most simple usage.
 #
@@ -29,6 +29,8 @@
 # If you are following this tutorial on your own machine, chose the option that makes the most sense. If you are following on the notebook, we will install DVC with `pip`:
 
 # %%
+# # brew install dvc
+# # conda install dvc
 # ! pip install dvc
 
 # %% [markdown]

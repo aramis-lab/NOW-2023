@@ -1,0 +1,818 @@
+import torch
+import numpy as np
+import pandas as pd
+from torch import nn
+from time import time
+from os import path
+from torchvision import transforms
+import random
+from copy import deepcopy
+
+### DATABASE ###
+# Load the complete dataset
+OASIS_df = pd.read_csv(
+    '/Users/camille.brianceau/Downloads/OASIS-1_dataset/tsv_files/lab_1/OASIS_BIDS.tsv', sep='\t',
+    usecols=['participant_id', 'session_id', 'alternative_id_1', 'sex',
+             'education_level', 'age_bl', 'diagnosis_bl', 'laterality', 'MMS',
+             'cdr_global', 'diagnosis']
+)
+# Show first items of the table
+print(OASIS_df.head())
+# First visual inspection
+_ = OASIS_df.hist(figsize=(16, 8))
+
+
+# Study the characteristics of the AD & CN populations (age, sex, MMS, cdr_global)
+def characteristics_table(df, merged_df):
+    """Creates a DataFrame that summarizes the characteristics of the DataFrame df"""
+    diagnoses = np.unique(df.diagnosis.values)
+    population_df = pd.DataFrame(index=diagnoses,
+                                columns=['N', 'age', '%sexF', 'education',
+                                         'MMS', 'CDR=0', 'CDR=0.5', 'CDR=1', 'CDR=2'])
+    merged_df = merged_df.set_index(['participant_id', 'session_id'], drop=True)
+    df = df.set_index(['participant_id', 'session_id'], drop=True)
+    sub_merged_df = merged_df.loc[df.index]
+
+    for diagnosis in population_df.index.values:
+        diagnosis_df = sub_merged_df[df.diagnosis == diagnosis]
+        population_df.loc[diagnosis, 'N'] = len(diagnosis_df)
+        # Age
+        mean_age = np.mean(diagnosis_df.age_bl)
+        std_age = np.std(diagnosis_df.age_bl)
+        population_df.loc[diagnosis, 'age'] = '%.1f ± %.1f' % (mean_age, std_age)
+        # Sex
+        population_df.loc[diagnosis, '%sexF'] = round((len(diagnosis_df[diagnosis_df.sex == 'F']) / len(diagnosis_df)) * 100, 1)
+        # Education level
+        mean_education_level = np.nanmean(diagnosis_df.education_level)
+        std_education_level = np.nanstd(diagnosis_df.education_level)
+        population_df.loc[diagnosis, 'education'] = '%.1f ± %.1f' % (mean_education_level, std_education_level)
+        # MMS
+        mean_MMS = np.mean(diagnosis_df.MMS)
+        std_MMS = np.std(diagnosis_df.MMS)
+        population_df.loc[diagnosis, 'MMS'] = '%.1f ± %.1f' % (mean_MMS, std_MMS)
+        # CDR
+        for value in ['0', '0.5', '1', '2']:
+          population_df.loc[diagnosis, 'CDR=%s' % value] = len(diagnosis_df[diagnosis_df.cdr_global == float(value)])
+
+    return population_df
+
+population_df = characteristics_table(OASIS_df, OASIS_df)
+population_df
+
+### PREPROCESSING ###
+
+
+from torch.utils.data import Dataset, DataLoader, sampler
+from os import path
+
+class MRIDataset(Dataset):
+
+    def __init__(self, img_dir, data_df, transform=None):
+        """
+        Args:
+            img_dir (str): path to the CAPS directory containing preprocessed images
+            data_df (DataFrame): metadata of the population.
+                Columns include participant_id, session_id and diagnosis).
+            transform (callable): list of transforms applied on-the-fly, chained with torchvision.transforms.Compose.
+        """
+        self.img_dir = img_dir
+        self.transform = transform
+        self.data_df = data_df
+        self.label_code = {"AD": 1, "CN": 0}
+
+        self.size = self[0]['image'].shape
+
+    def __len__(self):
+        return len(self.data_df)
+
+    def __getitem__(self, idx):
+
+        diagnosis = self.data_df.loc[idx, 'diagnosis']
+        label = self.label_code[diagnosis]
+
+        participant_id = self.data_df.loc[idx, 'participant_id']
+        session_id = self.data_df.loc[idx, 'session_id']
+        filename = 'subjects/' + participant_id + '/' + session_id + '/' + \
+          'deeplearning_prepare_data/image_based/custom/' + \
+          participant_id + '_' + session_id + \
+          '_T1w_segm-graymatter_space-Ixi549Space_modulated-off_probability.pt'
+
+        image = torch.load(path.join(self.img_dir, filename))
+
+        if self.transform:
+            image = self.transform(image)
+
+        sample = {'image': image, 'label': label,
+                  'participant_id': participant_id,
+                  'session_id': session_id}
+        return sample
+
+    def train(self):
+        self.transform.train()
+
+    def eval(self):
+        self.transform.eval()
+
+class CropLeftHC(object):
+    """Crops the left hippocampus of a MRI non-linearly registered to MNI"""
+    def __init__(self, random_shift=0):
+        self.random_shift = random_shift
+        self.train_mode = True
+    def __call__(self, img):
+        if self.train_mode:
+            x = random.randint(-self.random_shift, self.random_shift)
+            y = random.randint(-self.random_shift, self.random_shift)
+            z = random.randint(-self.random_shift, self.random_shift)
+        else:
+            x, y, z = 0, 0, 0
+        return img[:, 25 + x:55 + x,
+                   50 + y:90 + y,
+                   27 + z:57 + z].clone()
+
+    def train(self):
+        self.train_mode = True
+
+    def eval(self):
+        self.train_mode = False
+
+class CropRightHC(object):
+    """Crops the right hippocampus of a MRI non-linearly registered to MNI"""
+    def __init__(self, random_shift=0):
+        self.random_shift = random_shift
+        self.train_mode = True
+    def __call__(self, img):
+        if self.train_mode:
+            x = random.randint(-self.random_shift, self.random_shift)
+            y = random.randint(-self.random_shift, self.random_shift)
+            z = random.randint(-self.random_shift, self.random_shift)
+        else:
+            x, y, z = 0, 0, 0
+        return img[:, 65 + x:95 + x,
+                   50 + y:90 + y,
+                   27 + z:57 + z].clone()
+
+    def train(self):
+        self.train_mode = True
+
+    def eval(self):
+        self.train_mode = False
+
+### VISUALIZATION ###
+
+import matplotlib.pyplot as plt
+import nibabel as nib
+from scipy.ndimage import rotate
+
+subject = 'sub-OASIS10003'
+preprocessed_pt = torch.load(f'/Users/camille.brianceau/Downloads/OASIS-1_dataset/CAPS/subjects/{subject}/ses-M00/' +
+                    f'deeplearning_prepare_data/image_based/custom/{subject}_ses-M00_' +
+                    'T1w_segm-graymatter_space-Ixi549Space_modulated-off_' +
+                    'probability.pt')
+raw_nii = nib.load(f'/Users/camille.brianceau/Downloads/OASIS-1_dataset/raw/{subject}_ses-M00_T1w.nii.gz')
+
+raw_np = raw_nii.get_fdata()
+
+def show_slices(slices):
+    """ Function to display a row of image slices """
+    fig, axes = plt.subplots(1, len(slices))
+    for i, slice in enumerate(slices):
+        axes[i].imshow(slice.T, cmap="gray", origin="lower")
+
+slice_0 = raw_np[:, :, 78]
+slice_1 = raw_np[122, :, :]
+slice_2 = raw_np[:, 173, :]
+show_slices([slice_0, rotate(slice_1, 90), rotate(slice_2, 90)])
+plt.suptitle(f'Slices of raw image of subject {subject}')
+plt.savefig("/Users/camille.brianceau/aramis/NOW-2023/figures/5.png")
+
+slice_0 = preprocessed_pt[0, 60, :, :]
+slice_1 = preprocessed_pt[0, :, 72, :]
+slice_2 = preprocessed_pt[0, :, :, 60]
+show_slices([slice_0, slice_1, slice_2])
+plt.suptitle(f'Center slices of preprocessed image of subject {subject}')
+plt.savefig("/Users/camille.brianceau/aramis/NOW-2023/figures/4.png")
+
+leftHC_pt = CropLeftHC()(preprocessed_pt)
+slice_0 = leftHC_pt[0, 15, :, :]
+slice_1 = leftHC_pt[0, :, 20, :]
+slice_2 = leftHC_pt[0, :, :, 15]
+show_slices([slice_0, slice_1, slice_2])
+plt.suptitle(f'Center slices of left HC of subject {subject}')
+plt.savefig("/Users/camille.brianceau/aramis/NOW-2023/figures/3.png")
+
+### CROSS VALIDATION ###
+
+train_df = pd.read_csv('/Users/camille.brianceau/Downloads/OASIS-1_dataset/tsv_files/lab_1/train.tsv', sep='\t')
+valid_df = pd.read_csv('/Users/camille.brianceau/Downloads/OASIS-1_dataset/tsv_files/lab_1/validation.tsv', sep='\t')
+
+train_population_df = characteristics_table(train_df, OASIS_df)
+valid_population_df = characteristics_table(valid_df, OASIS_df)
+
+print(f"Train dataset:\n {train_population_df}\n")
+print(f"Validation dataset:\n {valid_population_df}")
+
+### MODEL ###
+
+img_dir = path.join('/Users/camille.brianceau/Downloads/OASIS-1_dataset', 'CAPS')
+batch_size=4
+
+example_dataset = MRIDataset(img_dir, OASIS_df, transform=CropLeftHC())
+example_dataloader = DataLoader(example_dataset, batch_size=batch_size, drop_last=True)
+for data in example_dataloader:
+    pass
+
+print(f"Shape of Dataset output:\n {example_dataset[0]['image'].shape}\n")
+
+print(f"Shape of DataLoader output:\n {data['image'].shape}")
+
+### CONVOLUTION ### 
+
+from torch import nn
+
+conv_layer = nn.Conv3d(8, 16, 3)
+print('Weights shape\n', conv_layer.weight.shape)
+print()
+print('Bias shape\n', conv_layer.bias.shape)
+
+### BATCH NORMALIZATION ###
+
+batch_layer = nn.BatchNorm3d(16)
+print('Gamma value\n', batch_layer.state_dict()['weight'].shape)
+print()
+print('Beta value\n', batch_layer.state_dict()['bias'].shape)
+
+
+### POOLING ###
+
+class PadMaxPool3d(nn.Module):
+    """A MaxPooling module which deals with odd sizes with padding"""
+    def __init__(self, kernel_size, stride, return_indices=False, return_pad=False):
+        super(PadMaxPool3d, self).__init__()
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.pool = nn.MaxPool3d(kernel_size, stride, return_indices=return_indices)
+        self.pad = nn.ConstantPad3d(padding=0, value=0)
+        self.return_indices = return_indices
+        self.return_pad = return_pad
+
+    def set_new_return(self, return_indices=True, return_pad=True):
+        self.return_indices = return_indices
+        self.return_pad = return_pad
+        self.pool.return_indices = return_indices
+
+    def forward(self, f_maps):
+        coords = [self.stride - f_maps.size(i + 2) % self.stride for i in range(3)]
+        for i, coord in enumerate(coords):
+            if coord == self.stride:
+                coords[i] = 0
+
+        self.pad.padding = (coords[2], 0, coords[1], 0, coords[0], 0)
+
+        if self.return_indices:
+            output, indices = self.pool(self.pad(f_maps))
+
+            if self.return_pad:
+                return output, indices, (coords[2], 0, coords[1], 0, coords[0], 0)
+            else:
+                return output, indices
+
+        else:
+            output = self.pool(self.pad(f_maps))
+
+            if self.return_pad:
+                return output, (coords[2], 0, coords[1], 0, coords[0], 0)
+            else:
+                return output
+            
+
+
+# ### DROPOUT ###
+
+# dropout = nn.Dropout(0.5)
+# input_tensor = torch.rand(10)
+# output_tensor = dropout(input_tensor)
+# print("Input \n", input_tensor)
+# print()
+# print("Output \n", output_tensor)
+
+# ### FULLY CONNECTED ###
+
+# fc = nn.Linear(16, 2)
+# print("Weights shape \n", fc.weight.shape)
+# print()
+# print("Bias shape \n", fc.bias.shape)
+
+
+### CUSTOM NETWORK ###
+
+# To complete
+class CustomNetwork(nn.Module):
+
+    def __init__(self):
+        super(CustomNetwork, self).__init__()
+        self.convolutions = nn.Sequential(
+            nn.Conv3d(1, 8, 3, padding=1),
+            # Size 8@30x40x30
+            nn.BatchNorm3d(8),
+            nn.LeakyReLU(),
+            PadMaxPool3d(2, 2),
+            # Size 8@15x20x15
+
+            nn.Conv3d(8, 16, 3, padding=1),
+            # Size 16@15x20x15
+            nn.BatchNorm3d(16),
+            nn.LeakyReLU(),
+            PadMaxPool3d(2, 2),
+            # Size 16@8x10x8)
+
+            nn.Conv3d(16, 32, 3, padding=1),
+            # Size 32@8x10x8
+            nn.BatchNorm3d(32),
+            nn.LeakyReLU(),
+            PadMaxPool3d(2, 2),
+            # Size 32@4x5x4
+
+        )
+
+        self.linear = nn.Sequential(
+            nn.Dropout(p=0.5),
+            nn.Linear(32 * 4 * 5 * 4, 2)
+
+        )
+
+    def forward(self, x):
+        x = self.convolutions(x)
+        x = x.view(x.size(0), -1)
+        x = self.linear(x)
+        return x
+    
+
+
+### TRAIN ET TEST ###
+
+def train(model, train_loader, criterion, optimizer, n_epochs):
+    """
+    Method used to train a CNN
+
+    Args:
+        model: (nn.Module) the neural network
+        train_loader: (DataLoader) a DataLoader wrapping a MRIDataset
+        criterion: (nn.Module) a method to compute the loss of a mini-batch of images
+        optimizer: (torch.optim) an optimization algorithm
+        n_epochs: (int) number of epochs performed during training
+
+    Returns:
+        best_model: (nn.Module) the trained neural network
+    """
+    best_model = deepcopy(model)
+    train_best_loss = np.inf
+
+    for epoch in range(n_epochs):
+        model.train()
+        train_loader.dataset.train()
+        for i, data in enumerate(train_loader, 0):
+            # Retrieve mini-batch and put data on GPU with .cuda()
+            images, labels = data['image'], data['label']#.cuda(), data['label'].cuda()
+            # Forward pass
+            outputs = model(images)
+            # Loss computation
+            loss = criterion(outputs, labels)
+            # Back-propagation (gradients computation)
+            loss.backward()
+            # Parameters update
+            optimizer.step()
+            # Erase previous gradients
+            optimizer.zero_grad()
+
+        _, train_metrics = test(model, train_loader, criterion)
+
+        print(
+            f"Epoch {epoch}: loss = {train_metrics['mean_loss']:.4f}, "
+            f"balanced accuracy = {train_metrics['balanced_accuracy']:.4f}"
+            )
+
+        if train_metrics['mean_loss'] < train_best_loss:
+            best_model = deepcopy(model)
+            train_best_loss = train_metrics['mean_loss']
+
+    return best_model
+
+def test(model, data_loader, criterion):
+    """
+    Method used to test a CNN
+
+    Args:
+        model: (nn.Module) the neural network
+        data_loader: (DataLoader) a DataLoader wrapping a MRIDataset
+        criterion: (nn.Module) a method to compute the loss of a mini-batch of images
+
+    Returns:
+        results_df: (DataFrame) the label predicted for every subject
+        results_metrics: (dict) a set of metrics
+    """
+    model.eval()
+    data_loader.dataset.eval()
+    columns = ["participant_id", "proba0", "proba1",
+               "true_label", "predicted_label"]
+    results_df = pd.DataFrame(columns=columns)
+    total_loss = 0
+
+    with torch.no_grad():
+        for i, data in enumerate(data_loader, 0):
+            images, labels = data['image'], data['label'] #.cuda(), data['label'].cuda()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            total_loss += loss.item()
+            probs = nn.Softmax(dim=1)(outputs)
+            _, predicted = torch.max(outputs.data, 1)
+
+            for idx, sub in enumerate(data['participant_id']):
+                row = [sub,
+                       probs[idx, 0].item(), probs[idx, 1].item(),
+                       labels[idx].item(), predicted[idx].item()]
+                row_df = pd.DataFrame([row], columns=columns)
+                results_df = pd.concat([results_df, row_df])
+
+    results_metrics = compute_metrics(results_df.true_label.values, results_df.predicted_label.values)
+    results_df.reset_index(inplace=True, drop=True)
+    results_metrics['mean_loss'] = total_loss / len(data_loader.dataset)
+
+    return results_df, results_metrics
+
+
+def compute_metrics(ground_truth, prediction):
+    """Computes the accuracy, sensitivity, specificity and balanced accuracy"""
+    tp = np.sum((prediction == 1) & (ground_truth == 1))
+    tn = np.sum((prediction == 0) & (ground_truth == 0))
+    fp = np.sum((prediction == 1) & (ground_truth == 0))
+    fn = np.sum((prediction == 0) & (ground_truth == 1))
+
+    metrics_dict = dict()
+    metrics_dict['accuracy'] = (tp + tn) / (tp + tn + fp + fn)
+
+    # Sensitivity
+    if tp + fn != 0:
+        metrics_dict['sensitivity'] = tp / (tp + fn)
+    else:
+        metrics_dict['sensitivity'] = 0.0
+
+    # Specificity
+    if fp + tn != 0:
+        metrics_dict['specificity'] = tn / (fp + tn)
+    else:
+        metrics_dict['specificity'] = 0.0
+
+    metrics_dict['balanced_accuracy'] = (metrics_dict['sensitivity'] + metrics_dict['specificity']) / 2
+
+    return metrics_dict
+
+
+
+### TRAIN WITH LEFT HC ###
+
+
+img_dir = path.join('/Users/camille.brianceau/Downloads/OASIS-1_dataset', 'CAPS')
+transform = CropLeftHC(2)
+
+train_datasetLeftHC = MRIDataset(img_dir, train_df, transform=transform)
+valid_datasetLeftHC = MRIDataset(img_dir, valid_df, transform=transform)
+
+# Try different learning rates
+learning_rate = 10**-4
+n_epochs = 30
+batch_size = 4
+
+# Put the network on GPU
+modelLeftHC = CustomNetwork() #.cuda()
+train_loaderLeftHC = DataLoader(train_datasetLeftHC, batch_size=batch_size, shuffle=True, pin_memory=True)
+# A high batch size improves test speed
+valid_loaderLeftHC = DataLoader(valid_datasetLeftHC, batch_size=32, shuffle=False, pin_memory=True)
+criterion = nn.CrossEntropyLoss(reduction='sum')
+optimizer = torch.optim.Adam(modelLeftHC.parameters(), learning_rate)
+
+best_modelLeftHC = train(modelLeftHC, train_loaderLeftHC, criterion, optimizer, n_epochs)
+
+valid_resultsLeftHC_df, valid_metricsLeftHC = test(best_modelLeftHC, valid_loaderLeftHC, criterion)
+train_resultsLeftHC_df, train_metricsLeftHC = test(best_modelLeftHC, train_loaderLeftHC, criterion)
+print(valid_metricsLeftHC)
+print(train_metricsLeftHC)
+
+
+valid_resultsLeftHC_df = valid_resultsLeftHC_df.merge(OASIS_df, how='left', on='participant_id', sort=False)
+valid_resultsLeftHC_old_df = valid_resultsLeftHC_df[(valid_resultsLeftHC_df.age_bl >= 62)]
+#compute_metrics(valid_resultsLeftHC_old_df.true_label, valid_resultsLeftHC_old_df.predicted_label)
+
+
+
+### TRAIN WITH RIGHT HC ###
+img_dir = path.join('/Users/camille.brianceau/Downloads/OASIS-1_dataset', 'CAPS')
+transform = CropRightHC(2)
+
+train_datasetRightHC = MRIDataset(img_dir, train_df, transform=transform)
+valid_datasetRightHC = MRIDataset(img_dir, valid_df, transform=transform)
+
+learning_rate = 10**-4
+n_epochs = 30
+batch_size = 4
+
+# Put the network on GPU
+modelRightHC = CustomNetwork() #.cuda()
+train_loaderRightHC = DataLoader(train_datasetRightHC, batch_size=batch_size, shuffle=True,  pin_memory=True)
+valid_loaderRightHC = DataLoader(valid_datasetRightHC, batch_size=32, shuffle=False,  pin_memory=True)
+criterion = nn.CrossEntropyLoss(reduction='sum')
+optimizer = torch.optim.Adam(modelRightHC.parameters(), learning_rate)
+
+best_modelRightHC = train(modelRightHC, train_loaderRightHC, criterion, optimizer, n_epochs)
+
+valid_resultsRightHC_df, valid_metricsRightHC = test(best_modelRightHC, valid_loaderRightHC, criterion)
+train_resultsRightHC_df, train_metricsRightHC = test(best_modelRightHC, train_loaderRightHC, criterion)
+print(valid_metricsRightHC)
+print(train_metricsRightHC)
+
+
+### SOFT VOTING ###
+
+def softvoting(leftHC_df, rightHC_df):
+    df1 = leftHC_df.set_index('participant_id', drop=True)
+    df2 = rightHC_df.set_index('participant_id', drop=True)
+    results_df = pd.DataFrame(index=df1.index.values,
+                              columns=['true_label', 'predicted_label',
+                                       'proba0', 'proba1'])
+    results_df.true_label = df1.true_label
+    # Compute predicted label and probabilities
+    results_df.proba1 = 0.5 * df1.proba1 + 0.5 * df2.proba1
+    results_df.proba0 = 0.5 * df1.proba0 + 0.5 * df2.proba0
+    results_df.predicted_label = (0.5 * df1.proba1 + 0.5 * df2.proba1 > 0.5).astype(int)
+
+    return results_df
+
+valid_results = softvoting(valid_resultsLeftHC_df, valid_resultsRightHC_df)
+valid_metrics = compute_metrics(valid_results.true_label, valid_results.predicted_label)
+print(valid_metrics)
+
+
+### CLUSTERING ON AD & CN ###
+
+class CropMaxUnpool3d(nn.Module):
+    def __init__(self, kernel_size, stride):
+        super(CropMaxUnpool3d, self).__init__()
+        self.unpool = nn.MaxUnpool3d(kernel_size, stride)
+
+    def forward(self, f_maps, indices, padding=None):
+        output = self.unpool(f_maps, indices)
+        if padding is not None:
+            x1 = padding[4]
+            y1 = padding[2]
+            z1 = padding[0]
+            output = output[:, :, x1::, y1::, z1::]
+
+        return output
+    
+
+class AutoEncoder(nn.Module):
+
+    def __init__(self):
+        super(AutoEncoder, self).__init__()
+
+        # Initial size (30, 40, 30)
+
+        self.encoder = nn.Sequential(
+            nn.Conv3d(1, 8, 3, padding=1),
+            nn.BatchNorm3d(8),
+            nn.LeakyReLU(),
+            PadMaxPool3d(2, 2, return_indices=True, return_pad=True),
+            # Size (15, 20, 15)
+
+            nn.Conv3d(8, 16, 3, padding=1),
+            nn.BatchNorm3d(16),
+            nn.LeakyReLU(),
+            PadMaxPool3d(2, 2, return_indices=True, return_pad=True),
+            # Size (8, 10, 8)
+
+            nn.Conv3d(16, 32, 3, padding=1),
+            nn.BatchNorm3d(32),
+            nn.LeakyReLU(),
+            PadMaxPool3d(2, 2, return_indices=True, return_pad=True),
+            # Size (4, 5, 4)
+
+            nn.Conv3d(32, 1, 1),
+            # Size (4, 5, 4)
+        )
+
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose3d(1, 32, 1),
+            # Size (4, 5, 4)
+
+            CropMaxUnpool3d(2, 2),
+            nn.ConvTranspose3d(32, 16, 3, padding=1),
+            nn.BatchNorm3d(16),
+            nn.LeakyReLU(),
+            # Size (8, 10, 8)
+
+            CropMaxUnpool3d(2, 2),
+            nn.ConvTranspose3d(16, 8, 3, padding=1),
+            nn.BatchNorm3d(8),
+            nn.LeakyReLU(),
+            # Size (15, 20, 15)
+
+            CropMaxUnpool3d(2, 2),
+            nn.ConvTranspose3d(8, 1, 3, padding=1),
+            nn.BatchNorm3d(1),
+            nn.Sigmoid()
+            # Size (30, 40, 30)
+        )
+
+    def forward(self, x):
+        indices_list = []
+        pad_list = []
+        for layer in self.encoder:
+            if isinstance(layer, PadMaxPool3d):
+                x, indices, pad = layer(x)
+                indices_list.append(indices)
+                pad_list.append(pad)
+            else:
+                x = layer(x)
+
+        code = x.view(x.size(0), -1)
+        for layer in self.decoder:
+            if isinstance(layer, CropMaxUnpool3d):
+                x = layer(x, indices_list.pop(), pad_list.pop())
+            else:
+                x = layer(x)
+
+        return code, x
+    
+
+
+### TRAIN AUTOENCODER ###
+
+def trainAE(model, train_loader, criterion, optimizer, n_epochs):
+    """
+    Method used to train an AutoEncoder
+
+    Args:
+        model: (nn.Module) the neural network
+        train_loader: (DataLoader) a DataLoader wrapping a MRIDataset
+        criterion: (nn.Module) a method to compute the loss of a mini-batch of images
+        optimizer: (torch.optim) an optimization algorithm
+        n_epochs: (int) number of epochs performed during training
+
+    Returns:
+        best_model: (nn.Module) the trained neural network.
+    """
+    best_model = deepcopy(model)
+    train_best_loss = np.inf
+
+    for epoch in range(n_epochs):
+        model.train()
+        train_loader.dataset.train()
+        for i, data in enumerate(train_loader, 0):
+            # ToDo
+            # Complete the training function in a similar way
+            # than for the CNN classification training.
+            # Retrieve mini-batch
+            images, labels = data['image'], data['label'] #.cuda(), data['label'].cuda()
+            # Forward pass + loss computation
+            _, outputs = model((images))
+            loss = criterion(outputs, images)
+            # Back-propagation
+            loss.backward()
+            # Parameters update
+            optimizer.step()
+            # Erase previous gradients
+            optimizer.zero_grad()
+
+        mean_loss = testAE(model, train_loader, criterion)
+
+        print(f'Epoch {epoch}: loss = {mean_loss:.6f}')
+
+        if mean_loss < train_best_loss:
+            best_model = deepcopy(model)
+            train_best_loss = mean_loss
+
+    return best_model
+
+
+def testAE(model, data_loader, criterion):
+    """
+    Method used to test an AutoEncoder
+
+    Args:
+        model: (nn.Module) the neural network
+        data_loader: (DataLoader) a DataLoader wrapping a MRIDataset
+        criterion: (nn.Module) a method to compute the loss of a mini-batch of images
+
+    Returns:
+        results_df: (DataFrame) the label predicted for every subject
+        results_metrics: (dict) a set of metrics
+    """
+    model.eval()
+    data_loader.dataset.eval()
+    total_loss = 0
+
+    with torch.no_grad():
+        for i, data in enumerate(data_loader, 0):
+            images, labels = data['image'], data['label'] #.cuda(), data['label'].cuda()
+            _, outputs = model((images))
+            loss = criterion(outputs, images)
+            total_loss += loss.item()
+
+    return total_loss / len(data_loader.dataset) / np.product(data_loader.dataset.size)
+
+learning_rate = 10**-3
+n_epochs = 30
+batch_size = 4
+
+AELeftHC = AutoEncoder()#.cuda()
+criterion = nn.MSELoss(reduction='sum')
+optimizer = torch.optim.Adam(AELeftHC.parameters(), learning_rate)
+
+best_AELeftHC = trainAE(AELeftHC, train_loaderLeftHC, criterion, optimizer, n_epochs)
+
+### VISUALIZATION ###
+
+import matplotlib.pyplot as plt
+import nibabel as nib
+from scipy.ndimage import rotate
+
+subject = 'sub-OASIS10003'
+preprocessed_pt = torch.load(f'/Users/camille.brianceau/Downloads/OASIS-1_dataset/CAPS/subjects/{subject}/ses-M00/' +
+                    'deeplearning_prepare_data/image_based/custom/' + subject +
+                    '_ses-M00_'+
+                    'T1w_segm-graymatter_space-Ixi549Space_modulated-off_' +
+                    'probability.pt')
+input_pt = CropLeftHC()(preprocessed_pt).unsqueeze(0)#.cuda()
+_, output_pt = best_AELeftHC(input_pt)
+
+
+slice_0 = input_pt[0, 0, 15, :, :].cpu()
+slice_1 = input_pt[0, 0, :, 20, :].cpu()
+slice_2 = input_pt[0, 0, :, :, 15].cpu()
+show_slices([slice_0, slice_1, slice_2])
+plt.suptitle(f'Center slices of the input image of subject {subject}')
+plt.savefig("/Users/camille.brianceau/aramis/NOW-2023/figures/1.png")
+
+slice_0 = output_pt[0, 0, 15, :, :].cpu().detach()
+slice_1 = output_pt[0, 0, :, 20, :].cpu().detach()
+slice_2 = output_pt[0, 0, :, :, 15].cpu().detach()
+show_slices([slice_0, slice_1, slice_2])
+plt.suptitle(f'Center slices of the output image of subject {subject}')
+plt.savefig("/Users/camille.brianceau/aramis/NOW-2023/figures/2.png")
+
+
+### CLUSTERING ###
+
+def compute_dataset_features(data_loader, model):
+
+    concat_codes = torch.Tensor() #.cuda()
+    concat_labels = torch.LongTensor()
+    concat_names = []
+
+    for data in data_loader:
+      image = data['image'] #.cuda()
+      labels = data['label']
+      names = data['participant_id']
+
+      code, _ = model(image)
+      concat_codes = torch.cat([concat_codes, code.squeeze(1)], 0)
+      concat_labels = torch.cat([concat_labels, labels])
+      concat_names = concat_names + names
+
+    concat_codes_np = concat_codes.cpu().detach().numpy()
+    concat_labels_np = concat_labels.numpy()
+    concat_names = np.array(concat_names)[:, np.newaxis]
+
+    return concat_codes_np, concat_labels_np, concat_names
+
+# train_codes, train_labels, names = compute_dataset_features(train_loaderBothHC, best_AEBothHC)
+train_codes, train_labels, names = compute_dataset_features(train_loaderLeftHC, best_AELeftHC)
+
+from sklearn import mixture
+from sklearn.metrics import adjusted_rand_score
+
+n_components = 2
+model = mixture.GaussianMixture(n_components)
+model.fit(train_codes)
+train_predict = model.predict(train_codes)
+
+metrics = compute_metrics(train_labels, train_predict)
+ari = adjusted_rand_score(train_labels, train_predict)
+print(f"Adjusted random index: {ari}")
+
+data_np = np.concatenate([names, train_codes,
+                          train_labels[:, np.newaxis],
+                          train_predict[:, np.newaxis]], axis=1)
+columns = ['feature %i' % i for i in range(train_codes.shape[1])]
+columns = ['participant_id'] + columns + ['true_label', 'predicted_label']
+data_df = pd.DataFrame(data_np, columns=columns).set_index('participant_id')
+
+merged_df = data_df.merge(OASIS_df.set_index('participant_id'), how='inner', on='participant_id')
+
+plt.title('Clustering values according to age and MMS score')
+for component in range(n_components):
+    predict_df = merged_df[merged_df.predicted_label == str(component)]
+    plt.plot(predict_df['age_bl'], predict_df['MMS'], 'o', label=f"cluster {component}")
+plt.legend()
+plt.xlabel('age')
+plt.ylabel('MMS')
+plt.savefig("/Users/camille.brianceau/aramis/NOW-2023/figures/6.png")
