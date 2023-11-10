@@ -204,102 +204,10 @@ valid_results = softvoting(valid_resultsLeftHC_df, valid_resultsRightHC_df)
 valid_metrics = compute_metrics(valid_results.true_label, valid_results.predicted_label)
 print(valid_metrics)
 
-# %%
-### CLUSTERING ON AD & CN ###
-
-class CropMaxUnpool3d(nn.Module):
-    def __init__(self, kernel_size, stride):
-        super(CropMaxUnpool3d, self).__init__()
-        self.unpool = nn.MaxUnpool3d(kernel_size, stride)
-
-    def forward(self, f_maps, indices, padding=None):
-        output = self.unpool(f_maps, indices)
-        if padding is not None:
-            x1 = padding[4]
-            y1 = padding[2]
-            z1 = padding[0]
-            output = output[:, :, x1::, y1::, z1::]
-
-        return output
-    
-from training import PadMaxPool3d
-class AutoEncoder(nn.Module):
-
-    def __init__(self):
-        super(AutoEncoder, self).__init__()
-
-        # Initial size (30, 40, 30)
-
-        self.encoder = nn.Sequential(
-            nn.Conv3d(1, 8, 3, padding=1),
-            nn.BatchNorm3d(8),
-            nn.LeakyReLU(),
-            PadMaxPool3d(2, 2, return_indices=True, return_pad=True),
-            # Size (15, 20, 15)
-
-            nn.Conv3d(8, 16, 3, padding=1),
-            nn.BatchNorm3d(16),
-            nn.LeakyReLU(),
-            PadMaxPool3d(2, 2, return_indices=True, return_pad=True),
-            # Size (8, 10, 8)
-
-            nn.Conv3d(16, 32, 3, padding=1),
-            nn.BatchNorm3d(32),
-            nn.LeakyReLU(),
-            PadMaxPool3d(2, 2, return_indices=True, return_pad=True),
-            # Size (4, 5, 4)
-
-            nn.Conv3d(32, 1, 1),
-            # Size (4, 5, 4)
-        )
-
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose3d(1, 32, 1),
-            # Size (4, 5, 4)
-
-            CropMaxUnpool3d(2, 2),
-            nn.ConvTranspose3d(32, 16, 3, padding=1),
-            nn.BatchNorm3d(16),
-            nn.LeakyReLU(),
-            # Size (8, 10, 8)
-
-            CropMaxUnpool3d(2, 2),
-            nn.ConvTranspose3d(16, 8, 3, padding=1),
-            nn.BatchNorm3d(8),
-            nn.LeakyReLU(),
-            # Size (15, 20, 15)
-
-            CropMaxUnpool3d(2, 2),
-            nn.ConvTranspose3d(8, 1, 3, padding=1),
-            nn.BatchNorm3d(1),
-            nn.Sigmoid()
-            # Size (30, 40, 30)
-        )
-
-    def forward(self, x):
-        indices_list = []
-        pad_list = []
-        for layer in self.encoder:
-            if isinstance(layer, PadMaxPool3d):
-                x, indices, pad = layer(x)
-                indices_list.append(indices)
-                pad_list.append(pad)
-            else:
-                x = layer(x)
-
-        code = x.view(x.size(0), -1)
-        for layer in self.decoder:
-            if isinstance(layer, CropMaxUnpool3d):
-                x = layer(x, indices_list.pop(), pad_list.pop())
-            else:
-                x = layer(x)
-
-        return code, x
-    
 
 # %%
 ### TRAIN AUTOENCODER ###
-from training import trainAE, testAE
+from training import trainAE, testAE, AutoEncoder
 learning_rate = 10**-3
 n_epochs = 30
 batch_size = 4
