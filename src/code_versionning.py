@@ -240,7 +240,7 @@ slice_1 = input_pt[0, 0, :, 20, :].cpu()
 slice_2 = input_pt[0, 0, :, :, 15].cpu()
 show_slices([slice_0, slice_1, slice_2])
 plt.suptitle(f'Center slices of the input image of subject {subject}')
-plt.savefig("/Users/camille.brianceau/aramis/NOW-2023/figures/1.png")
+plt.show()
 
 # %%
 slice_0 = output_pt[0, 0, 15, :, :].cpu().detach()
@@ -248,7 +248,7 @@ slice_1 = output_pt[0, 0, :, 20, :].cpu().detach()
 slice_2 = output_pt[0, 0, :, :, 15].cpu().detach()
 show_slices([slice_0, slice_1, slice_2])
 plt.suptitle(f'Center slices of the output image of subject {subject}')
-plt.savefig("/Users/camille.brianceau/aramis/NOW-2023/figures/2.png")
+plt.show()
 
 
 # %%
@@ -286,5 +286,5 @@ for component in range(n_components):
 plt.legend()
 plt.xlabel('age')
 plt.ylabel('MMS')
-plt.savefig("/Users/camille.brianceau/aramis/NOW-2023/figures/6.png")
+plt.show()
 
