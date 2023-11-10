@@ -36,6 +36,10 @@
 # ! pip install git+https://github.com/aramis-lab/NOW-2023-lib.git/
 
 # %%
+# If you are running on collab or if you don't have tree installed:
+# # ! apt-get install tree
+
+# %%
 # ! pip install dvc
 # ! git init
 # ! dvc init
@@ -66,6 +70,7 @@
 # Only run if necessary !
 #
 # # ! wget --no-check-certificate --show-progress https://aramislab.paris.inria.fr/files/data/databases/DL4MI/OASIS-1-dataset_pt_new.tar.gz
+# # ! tar -xzf OASIS-1-dataset_pt_new.tar.gz
 
 # %% [markdown]
 # Once downloaded, you can take a look at it:
@@ -73,6 +78,7 @@
 # %%
 from pathlib import Path
 
+# oasis_folder = Path("./OASIS-1_dataset/")
 oasis_folder = Path("/Users/nicolas.gensollen/NOW_2023/OASIS-1_dataset/")
 
 # %%
