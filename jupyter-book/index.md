@@ -15,7 +15,9 @@ The objective of the tutorial is to gain knowledge on:
 
 To run interactively the content of this book you have two options: run it locally or use Colab.
 
-````{tabbed} Run in Colab
+::::{tab-set}
+
+:::{tab-item} Run in Colab
 * When the content of the page is interactive, hover over the rocket icon 
   <i class="fa fa-rocket" aria-hidden="true"></i>
   at the top of the page an click "Colab" to open a cloud version of the same page.
@@ -26,9 +28,9 @@ To run interactively the content of this book you have two options: run it local
 
 * Remember to choose a runtime with GPU (Runtime menu -> *"Change runtime
   type"*). 
-````
+:::
 
-````{tabbed} Run Locally
+:::{tab-item} Run Locally
 * Clone the repository:
 ```
 git clone https://github.com/aramis-lab/NOW-2023
@@ -53,7 +55,10 @@ pip install -r ./jupyter-book/requirements.txt
 jupyter lab
 ```
 A new browser window will open, choose the correponding notebook from the folder `notebooks`.
-````
+:::
+
+::::
+
 
 ```{admonition} Prerequisite
 Programming knowledge in Python, basics usage of PyTorch ([see

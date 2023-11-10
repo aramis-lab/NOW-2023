@@ -1,5 +1,6 @@
 sphinx-tabs
 sphinx-click
+sphinx-design
 myst-parser
 myst-nb
 jupyter-book==0.15.*
