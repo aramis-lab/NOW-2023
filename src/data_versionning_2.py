@@ -17,7 +17,7 @@
 #
 # In the second chapter of the second part of this tutorial, we saw how to install and use [DVC](https://dvc.org) to version code and data in a simple way.
 #
-# However, our input dataset was extremely simple and could have been versionned with GIT without difficulty. 
+# However, our input dataset was extremely simple and could have been versionned with [Git](https://git-scm.com) without difficulty. 
 #
 # The main objective of this second chapter is to show the true power of [DVC](https://dvc.org).
 #
@@ -31,7 +31,7 @@
 #
 # Since this is a new notebook meant to be independant from the notebook of the first chapters, we will start a new project from scratch.
 #
-# Start by configuring the GIT and [DVC](https://dvc.org) repo:
+# Start by configuring the [Git](https://git-scm.com) and [DVC](https://dvc.org) repo:
 
 # %%
 # Dirty for now...
