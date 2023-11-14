@@ -124,7 +124,7 @@ def test_add(a, b, res):
 !git commit -m "tests: add test function for add"
 # %% [markdown]
 
-## IV. Ignore generated files
+# ## Ignore generated files
 # At this stage, they are Python bytecode generated files displayed when running `git status`. 
 # And we don't want to commit them inadvertently: this is the purpose of the `.gitignore` file.
 # Add the `.gitignore` to the base directory of your working copy with the following content:
