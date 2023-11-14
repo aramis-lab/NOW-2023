@@ -13,20 +13,15 @@
 # ---
 
 # %% [markdown]
-# # Part 2 : Data versionning using DVC
-# This is the second part of the tutorial on code and data versionning using [GitHub](https://docs.github.com/) and [DVC](https://dvc.org).
-
-
-# %% [markdown]
-# ## Chapter 1 : Getting started with DVC
+# # Chapter 2 : Getting started with DVC
 #
-# In this first chapter, we will install DVC and take a look at how DVC works with GIT in its most simple usage.
+# In this first chapter, we will install [DVC](https://dvc.org) and take a look at how [DVC](https://dvc.org) works with GIT in its most simple usage.
 #
-# ### Install DVC
+# ## Install DVC
 #
 # First, we need to install [DVC](https://dvc.org). There are various ways to install it depending on you OS, which you can browse [here](https://dvc.org/doc/install). For example, on MacOS, you can install it with `brew`, `conda`, or `pip`.
 #
-# If you are following this tutorial on your own machine, chose the option that makes the most sense. If you are following on the notebook, we will install DVC with `pip`:
+# If you are following this tutorial on your own machine, chose the option that makes the most sense. If you are following on the notebook, we will install [DVC](https://dvc.org) with `pip`:
 
 # %%
 # # brew install dvc
@@ -45,15 +40,15 @@
 # ! dvc --version
 
 # %% [markdown]
-# ### Initialize a DVC repository
+# ## Initialize a DVC repository
 #
-# Now that we have DVC installed we can start using it !
+# Now that we have [DVC](https://dvc.org) installed we can start using it !
 #
-# First of all, it is very important to understand that DVC is not a replacement for GIT. It is a tool designed to work WITH GIT as it solves a different problem than GIT.
+# First of all, it is very important to understand that [DVC](https://dvc.org) is not a replacement for GIT. It is a tool designed to work WITH GIT as it solves a different problem than GIT.
 #
-# In other words, you need both GIT and DVC to manage both code and data.
+# In other words, you need both GIT and [DVC](https://dvc.org) to manage both code and data.
 #
-# To initialize a DVC repository, we need to be in a GIT-initialized repository, so let's do that:
+# To initialize a [DVC](https://dvc.org) repository, we need to be in a GIT-initialized repository, so let's do that:
 
 # %%
 # ! git init
@@ -65,7 +60,7 @@
 # ! ls -lah
 
 # %% [markdown]
-# Now we can initialize the DVC repository:
+# Now we can initialize the [DVC](https://dvc.org) repository:
 
 # %%
 # ! dvc init
@@ -77,19 +72,19 @@
 # ! ls -lah
 
 # %% [markdown]
-# In addition to this, DVC created a few files for us. To see that, we can use the `git status` command since we have a git repository:
+# In addition to this, [DVC](https://dvc.org) created a few files for us. To see that, we can use the `git status` command since we have a git repository:
 
 # %%
 # ! git status
 
 # %% [markdown]
-# As we can see, DVC created 2 files in the `.dvc` folder as well as one file in the current workspace :
+# As we can see, [DVC](https://dvc.org) created 2 files in the `.dvc` folder as well as one file in the current workspace :
 #
 # - `.dvc/.gitignore`
 # - `.dvc/config`
 # - `.dvcignore`
 #
-# These files need to be versionned with GIT, DVC already added them to the stagging aread, so all we need to do is commit them:
+# These files need to be versionned with GIT, [DVC](https://dvc.org) already added them to the stagging aread, so all we need to do is commit them:
 
 # %% [markdown]
 # If you are running the current notebook on Collab, or if you have never configured git before, you need to configure your user name and email address with the `git config` command. You can either use the `--global` option to configure this globally on your machine, or the `--local` option to configure this only for the current project. Note that, if you are running on Collab, it doesn't really matter as the configuration will only leave for the duration of the session:
@@ -105,13 +100,13 @@
 # ! git log
 
 # %% [markdown]
-# And that's it, we have successfully initialized a DVC repository and we are now ready to track some code and data !
+# And that's it, we have successfully initialized a [DVC](https://dvc.org) repository and we are now ready to track some code and data !
 #
-# ### Track code and data
+# ## Track code and data
 #
-# In this section we are going to download some data that we will use as input for a classification model. The objective is to predict whether a patient has AD or not. We are going to keep this same objective for the whole tutorial but we will start very simple and add some complexity up a real experiment scenario.
+# In this section we are going to download some data that we will use as input for a classification model. The objective is to predict whether a patient has AD or not. We are going to keep this same objective for the whole tutorial but we will start very simple and add some complexity up to a real experiment scenario.
 #
-# #### Basic data with a basic model
+# ### Basic data with a basic model
 #
 # Let's start VERY simple with a dataset in the form of a TSV file with one row per subject and four columns:
 #
@@ -120,7 +115,7 @@
 # - the volume of this patient's right hypocampus (this will be second first predictive feature)
 # - the category of the patient: "AD" if the patient has Alzeihmer disease or "CN" for control (this will be out target)
 #
-# Let's download the data first. For this, we will use a special DVC command: `dvc get`:
+# Let's download the data first. For this, we will use a special [DVC](https://dvc.org) command: [dvc get](https://dvc.org/doc/command-reference/get):
 
 # %%
 # ! dvc get https://github.com/aramis-lab/dataset-registry NOW_2023/toy_dataset/version_1
@@ -226,24 +221,24 @@ model.plot() # Plot the decision function with the data
 # %% [markdown]
 # We can see that the model is able to learn a decision function to classify subjects with AD from control subjects.
 #
-# At this point, we are happy we our experiment and we wish to commit our changes. This is the moment where we need to understand what should be tracked with DVC and what should be tracked with GIT.
+# At this point, we are happy we our experiment and we wish to commit our changes. This is the moment where we need to understand what should be tracked with [DVC](https://dvc.org) and what should be tracked with GIT.
 #
-# First, `dataset.tsv` is our input data, so this is clearly something we shouldn't version with GIT (although GIT would manage it with such a simple dataset). We should clearly use DVC to track our dataset. The same goes with our experiment results: `model.pkl` which is our trained model serialized.
+# First, `dataset.tsv` is our input data, so this is clearly something we shouldn't version with GIT (although GIT would manage it with such a simple dataset). We should clearly use [DVC](https://dvc.org) to track our dataset. The same goes with our experiment results: `model.pkl` which is our trained model serialized.
 #
-# Let's track these two files with DVC:
+# Let's track these two files with [DVC](https://dvc.org):
 
 # %%
 # ! dvc add dataset.tsv model.pkl
 
 # %% [markdown]
-# As you can see, DVC is helping us by telling us what we should do next !
+# As you can see, [DVC](https://dvc.org) is helping us by telling us what we should do next !
 #
 # Tracking `dataset.tsv` and `model.pkl` generated two small metadata files:
 #
 # - `dataset.tsv.dvc`
 # - `model.pkl.dvc`
 #
-# Furthermore, DVC modified our `.gitignore` file to tell GIT to NOT track `dataset.tsv` and `model.pkl`.
+# Furthermore, [DVC](https://dvc.org) modified our `.gitignore` file to tell GIT to NOT track `dataset.tsv` and `model.pkl`.
 #
 # All these files are super small and easily managable for GIT. Let's version them with GIT:
 
@@ -263,7 +258,7 @@ model.plot() # Plot the decision function with the data
 # ! git log
 
 # %% [markdown]
-# #### Data can change
+# ### Data can change
 #
 # Datasets are not always fixed in time, they may evolve. For example, new data can be collected and added in new dataset releases.
 #
@@ -296,21 +291,21 @@ model.save()
 model.plot()
 
 # %% [markdown]
-# Great ! we now have our new model and we can use DVC to see what happened to our tracked data:
+# Great ! we now have our new model and we can use [DVC](https://dvc.org) to see what happened to our tracked data:
 
 # %%
 # ! dvc status
 
 # %% [markdown]
-# As expected, DVC is telling us that both our dataset and our serialized model have changed.
+# As expected, [DVC](https://dvc.org) is telling us that both our dataset and our serialized model have changed.
 #
-# As we would do with GIT, let's add these changes with DVC:
+# As we would do with GIT, let's add these changes with [DVC](https://dvc.org):
 
 # %%
 # ! dvc add dataset.tsv model.pkl
 
 # %% [markdown]
-# Again, DVC tells us what to do next, let's add the changes to the `.dvc` files with GIT:
+# Again, [DVC](https://dvc.org) tells us what to do next, let's add the changes to the `.dvc` files with GIT:
 
 # %%
 # ! git add dataset.tsv.dvc model.pkl.dvc
@@ -326,13 +321,13 @@ model.plot()
 # ! git log
 
 # %% [markdown]
-# #### Going back in time
+# ### Going back in time
 #
 # Now, let's imagine that we submitted a paper with the results of our first experiment and that we received the review after having done the new experiment just above.
 #
 # The reviewer is asking us to add some details on some of our plots. Clearly, we cannot use the new dataset and model to make the new plots !
 #
-# We need to go back to the state we were in when we generated those plots the first time. Fortunately, this is very easy to do thanks to both GIT and DVC.
+# We need to go back to the state we were in when we generated those plots the first time. Fortunately, this is very easy to do thanks to both GIT and [DVC](https://dvc.org).
 #
 # In our example, we were smart enough to tag the state of our experiment with the "v1.0" tag (we could have used something more informative like "publication for journal XXX"). 
 #

@@ -13,25 +13,25 @@
 # ---
 
 # %% [markdown]
-# ## Chapter 2 : Versionning large datasets with DVC
+# # Chapter 3 : Versioning large datasets with DVC
 #
-# In the first chapter of the second part of this tutorial, we saw how to install and use DVC to version code and data in a simple way.
+# In the second chapter of the second part of this tutorial, we saw how to install and use [DVC](https://dvc.org) to version code and data in a simple way.
 #
 # However, our input dataset was extremely simple and could have been versionned with GIT without difficulty. 
 #
-# The main objective of this second chapter is to show the true power of DVC.
+# The main objective of this second chapter is to show the true power of [DVC](https://dvc.org).
 #
 # We will keep our objective of predicting AD vs Control subjects, but instead of assuming a simple preprocessed dataset with hypocampus volumes already extracted, we will work directly with brain images and train a deep learning model to perform this task.
 #
-# This chapter also aims at showing some more advanced features of DVC like experiment managment. We will define our experiment as a dependency graph using DVC commands and see how easily we can reproduce past experiment with this infrastructure.
+# This chapter also aims at showing some more advanced features of [DVC](https://dvc.org) like experiment managment. We will define our experiment as a dependency graph using [DVC](https://dvc.org) commands and see how easily we can reproduce past experiment with this infrastructure.
 #
 # Let's dive in !
 #
-# ### Setup the repo
+# ## Setup the repo
 #
-# Since this is a new notebook meant to be independant from the notebook of the first chapter, we will start a new project from scratch.
+# Since this is a new notebook meant to be independant from the notebook of the first chapters, we will start a new project from scratch.
 #
-# Start by configuring the GIT and DVC repo:
+# Start by configuring the GIT and [DVC](https://dvc.org) repo:
 
 # %%
 # Dirty for now...
@@ -70,7 +70,7 @@ __pycache__
 .ipynb_checkpoints
 
 # %% [markdown]
-# ### Dataset
+# ## Dataset
 #
 # In this session we use the images from a public research project: OASIS-1. Two labels exist in this dataset:
 #
@@ -145,7 +145,7 @@ population_df = characteristics_table(OASIS_df, OASIS_df)
 population_df
 
 # %% [markdown]
-# ### Preprocessing
+# ## Preprocessing
 #
 # Theoretically, the main advantage of deep learning methods is to be able to work without extensive data preprocessing. However, as we have only a few images to train the network in this lab session, the preprocessing here is very extensive. More specifically, the images encountered:
 #

@@ -7,5 +7,6 @@ parts:
   - file: notebooks/code_versionning
 - caption: Part 2 - Data versionning with DVC
   chapters:
+  - file: notebooks/data_versionning_intro
   - file: notebooks/data_versionning
   - file: notebooks/data_versionning_2
