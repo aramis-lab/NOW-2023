@@ -49,8 +49,10 @@
 #
 # #### The dirty way
 #
-# <img src="https://github.com/aramis-lab/NOW-2023/blob/main/images/data_versioning_old_way.png" style="height: 200px;">
+# <img src="https://dvc.org/static/d40892521e2fff94dac9e59693f366df/958d8/data-ver-complex.png" style="height: 400px;">
 #
 # #### The cleaner way
+#
+# <img src="https://dvc.org/static/39d86590fa8ead1cd1247c883a8cf2c0/cb690/project-versions.png" style="height: 500px;">
 
 # %%
