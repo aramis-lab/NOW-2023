@@ -69,7 +69,7 @@
 #
 # [DVC](https://dvc.org) does not replace or include [Git](https://git-scm.com). You must have [Git](https://git-scm.com) in your system to enable important features such as data versioning and quick experimentation.
 #
-# [DVC](https://dvc.org) is written in Python and can be esily installed on the most common OS (Linux, MacOS, and Windows). We will see how to install [DVC](https://dvc.org) in the next chapter.
+# [DVC](https://dvc.org) is written in Python and can be easily installed on the most common OS (Linux, MacOS, and Windows). We will see how to install [DVC](https://dvc.org) in the next chapter.
 
 # %% [markdown]
 # ### What is the target users of DVC ?
@@ -107,7 +107,7 @@
 #
 # <img src="https://dvc.org/static/39d86590fa8ead1cd1247c883a8cf2c0/cb690/project-versions.png" style="height: 500px;">
 #
-# Data Version Control lets you capture the versions of your data and models in Git commits, while storing them on-premises or in cloud storage. It also provides a mechanism to switch between these different data contents. The result is a single history for data, code, and ML models that you can traverse.
+# Data Version Control lets you capture the versions of your data and models in [Git](https://git-scm.com) commits, while storing them on-premises or in cloud storage. It also provides a mechanism to switch between these different data contents. The result is a single history for data, code, and ML models that you can traverse.
 #
 # As you use [DVC](https://dvc.org), unique versions of your data files and directories are cached in a systematic way (preventing file duplication). The working data store is separated from your workspace to keep the project light, but stays connected via file links handled automatically by [DVC](https://dvc.org).
 #
@@ -115,11 +115,13 @@
 #
 # - **Lightweight:** [DVC](https://dvc.org) is a free, open-source command line tool that doesn't require databases, servers, or any other special services.
 # - **Consistency:** Projects stay readable with stable file names — they don't need to change because they represent variable data. No need for complicated paths like `data/20190922/labels_v7_final` or for constantly editing these in source code.
-# - **Efficient data management:** Use a familiar and cost-effective storage solution for your data and models (e.g. SFTP, S3, HDFS, etc.) — free from Git hosting constraints. [DVC](https://dvc.org) optimizes storing and transferring large files.
+# - **Efficient data management:** Use a familiar and cost-effective storage solution for your data and models (e.g. SFTP, S3, HDFS, etc.) — free from [Git](https://git-scm.com) hosting constraints. [DVC](https://dvc.org) optimizes storing and transferring large files.
 # - **Collaboration:** Easily distribute your project development and share its data internally and remotely, or reuse it in other places.
-# - **Data compliance:** Review data modification attempts as Git pull requests. Audit the project's immutable history to learn when datasets or models were approved, and why.
-# - **GitOps:** Connect your data science projects with the Git ecosystem. Git workflows open the door to advanced CI/CD tools (like CML), specialized patterns such as data registries, and other best practices.
+# - **Data compliance:** Review data modification attempts as [Git](https://git-scm.com) pull requests. Audit the project's immutable history to learn when datasets or models were approved, and why.
+# - **GitOps:** Connect your data science projects with the [Git](https://git-scm.com) ecosystem. [Git](https://git-scm.com) workflows open the door to advanced CI/CD tools (like [CML](https://cml.dev)), specialized patterns such as data registries, and other best practices.
 #
 # [DVC](https://dvc.org) also supports multiple advanced features out-of-the-box: Build, run, and versioning data pipelines, manage experiments effectively, and more.
+#
+# Let's take a closer look at how [DVC](https://dvc.org) works in the next chapter with a machine learning experiment example.
 
 # %%

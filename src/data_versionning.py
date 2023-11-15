@@ -15,13 +15,35 @@
 # %% [markdown]
 # # Chapter 2 : Getting started with DVC
 #
-# In this first chapter, we will install [DVC](https://dvc.org) and take a look at how [DVC](https://dvc.org) works with [Git](https://git-scm.com) in its most simple usage.
+# In this chapter, we will install [DVC](https://dvc.org) and take a look at how [DVC](https://dvc.org) works with [Git](https://git-scm.com) in its most simple usage.
 #
+
+# %%
+# If you are running on collab or if you don't have tree installed:
+# # ! apt-get install tree
+
+# %% [markdown]
 # ## Install DVC
 #
 # First, we need to install [DVC](https://dvc.org). There are various ways to install it depending on you OS, which you can browse [here](https://dvc.org/doc/install). For example, on MacOS, you can install it with [brew](https://brew.sh), [conda](https://anaconda.org), or [pip](https://pip.pypa.io/en/stable/).
 #
-# If you are following this tutorial on your own machine, chose the option that makes the most sense. If you are following on the notebook, we will install [DVC](https://dvc.org) with [pip](https://pip.pypa.io/en/stable/):
+# If you are following this tutorial on your own machine, chose the option that makes the most sense.
+#
+# `````{admonition} This admonition was styled...
+# :class: tip
+#
+# We strongly encourage you to create a virtual environment specifically for this tutorial. For example, if you are using conda, you can do the following:
+#
+# ```bash
+# $ conda create --name now python=3.10
+# $ conda activate now
+# ```
+#
+# `````
+#
+# If you are following on Collab you can `pip install` things without worrying about this.
+#
+# We will install [DVC](https://dvc.org) with [pip](https://pip.pypa.io/en/stable/):
 
 # %%
 # # brew install dvc
@@ -29,7 +51,9 @@
 # ! pip install dvc
 
 # %% [markdown]
+# ```{note}
 # Note that if you are running this notebook on [Collab](https://colab.google), you might need to click on the "RESTART RUNTIME" button just above.
+# ```
 #
 # We can check that [DVC](https://dvc.org) is installed:
 
@@ -48,7 +72,7 @@
 #
 # In other words, you need both [Git](https://git-scm.com) and [DVC](https://dvc.org) to manage both code and data.
 #
-# To initialize a [DVC](https://dvc.org) repository, we need to be in a [Git](https://git-scm.com)-initialized repository, so let's do that:
+# To initialize a [DVC](https://dvc.org) repository, we first need to be within a [Git](https://git-scm.com)-initialized repository, so let's do that:
 
 # %%
 # ! git init
@@ -74,7 +98,7 @@
 # %% [markdown]
 # In addition to this, [DVC](https://dvc.org) created a few files for us.
 #
-# To see that, we can use the [git status](https://git-scm.com/docs/git-status) command since we have a git repository:
+# To see that, we can use the [git status](https://git-scm.com/docs/git-status) command since we have a [Git](https://git-scm.com) repository:
 
 # %%
 # ! git status
@@ -88,7 +112,7 @@
 #
 # These files are very small and need to be versionned with [Git](https://git-scm.com).
 #
-# [DVC](https://dvc.org) behaves very similarly to Git and will often print helpful messages on what to do. In this case, [DVC](https://dvc.org) already added the new files to the stagging area, so all we need to do is commit them:
+# [DVC](https://dvc.org) behaves very similarly to [Git](https://git-scm.com) and will often print helpful messages on what to do. In this case, [DVC](https://dvc.org) already added the new files to the stagging area, so all we need to do is commit them using the [git commit](https://git-scm.com/docs/git-commit) command:
 
 # %% [markdown]
 # ```{note}
@@ -103,13 +127,16 @@
 # %%
 # ! git commit -m "initialize DVC"
 
+# %% [markdown]
+# We can visualize the history of our project using the [git log](https://git-scm.com/docs/git-log) command:
+
 # %%
 # ! git log
 
 # %% [markdown]
 # And that's it, we have successfully initialized a [DVC](https://dvc.org) repository and we are now ready to track some code and data !
 #
-# Let's quickly create a `.gitignore` file with some useful patterns to avoid tracking jupyter notebook related files with git. This will make our `git status` command outputs much cleaner and enable us to focus on the important files of the work space:
+# Let's quickly create a [.gitignore](https://git-scm.com/docs/gitignore) file with some useful patterns to avoid tracking jupyter notebook related files with [Git](https://git-scm.com). This will make our [git status](https://git-scm.com/docs/git-status) command outputs much cleaner and enable us to focus on the important files of the work space:
 
 # %%
 # %%writefile -a .gitignore
@@ -255,9 +282,9 @@ model.save() # Serialize the trained model
 model.plot() # Plot the decision function with the data
 
 # %% [markdown]
-# We can see that the model is able to learn a decision function to classify subjects with AD from control subjects.
+# We can see that the model is able to learn a decision function to classify subjects with AD (red dots) from control subjects. Furthermore, we can see that AD subjects seem to have smaller volumes than control subjects which is in accordance with our expectations. 
 #
-# But what happened to our work space ? We can use `git status` to get some useful information:
+# But what happened to our work space ? We can use [git status](https://git-scm.com/docs/git-status) to get some useful information:
 
 # %%
 # ! git status
@@ -269,7 +296,7 @@ model.plot() # Plot the decision function with the data
 #
 # First, `dataset.tsv` is our input data, so this is clearly something we shouldn't version with [Git](https://git-scm.com) (although [Git](https://git-scm.com) would manage it with such a simple dataset). We should clearly use [DVC](https://dvc.org) to track our dataset. The same goes with our experiment results: `model.pkl` which is our trained model serialized.
 #
-# Let's track these two files with [DVC](https://dvc.org). Again, the [DVC](https://dvc.org) command is very similar to the git command:
+# Let's track these two files with [DVC](https://dvc.org). To do so, we will use the [dvc add](https://dvc.org/doc/command-reference/add) command. Again, the [DVC](https://dvc.org) command is very similar to the git command:
 
 # %%
 # ! dvc add dataset.tsv model.pkl
@@ -281,28 +308,43 @@ model.plot() # Plot the decision function with the data
 #
 # - `dataset.tsv.dvc`
 # - `model.pkl.dvc`
+
+# %% [markdown]
+# ### The `.dvc` files and the dvc cache
 #
 # Let's take a look at them:
 
 # %%
-# !cat dataset.tsv.dvc
+# !cat dataset.tsv.dvc model.pkl.dvc
 
 # %% [markdown]
-# ### The `.dvc` files
-#
 # This is a very small and simple file ! Believe it or not, but this is all the information [DVC](https://dvc.org) needs to track our `dataset.tsv` file !
 #
 # The quite long sequence of characters corresponding to the `md5` field is the computed hash value of `dataset.tsv`. This is the key mechanism behind [DVC](https://dvc.org). By computing the hash value of `dataset.tsv` and comparing this value to the one stored in `dataset.tsv.dvc`, [DVC](https://dvc.org) can tell whether a given file or directory has changed.
 #
 # Of course there is a lot of hidden complexity here. For the interrested reader, you can take a look at [this page](https://dvc.org/doc/user-guide/project-structure/internal-files#structure-of-the-cache-directory) to understand better how this works.
 #
-# In addition to the `.dvc` files, [DVC](https://dvc.org) modified our `.gitignore` file to tell [Git](https://git-scm.com) to **NOT** track `dataset.tsv` and `model.pkl`. This will prevent us to commit large data files by mistake.
+# Without going to much into the implementation details of [DVC](https://dvc.org), it is nice to understand that [DVC](https://dvc.org) is actualling caching our data in the hidden folder `.dvc/cache`:
+
+# %%
+# ! tree .dvc/cache/files/md5
+
+# %% [markdown]
+# We can actually see that [DVC](https://dvc.org) is using the first two characters of the hash values as folders and the rest as file names. We can verify the content corresponding to the hash value of our `dataset.tsv` file:
+
+# %%
+# ! head -n 3 .dvc/cache/files/md5/58/ac275459541571c78e9292635f63c8
+
+# %% [markdown]
+# In other words, the `.dvc` files we just generated act as "pointers" to the actual data that [DVC](https://dvc.org) cached.
+#
+# In addition to the `.dvc` files, [DVC](https://dvc.org) modified our [.gitignore](https://git-scm.com/docs/gitignore) file to tell [Git](https://git-scm.com) to **NOT** track `dataset.tsv` and `model.pkl`. This will prevent us to commit large data files by mistake.
 
 # %%
 # ! git diff .gitignore
 
 # %% [markdown]
-# As you can see from the output of the `dvc add` command above, [DVC](https://dvc.org) is helping us by telling us what we should do next ! It is telling us to version these files with git.
+# As you can see from the output of the [dvc add](https://dvc.org/doc/command-reference/add) command above, [DVC](https://dvc.org) is helping us by telling us what we should do next ! It is telling us to version these files with git.
 #
 # Indeed, all these files are super small and easily managable for [Git](https://git-scm.com).
 #
@@ -312,7 +354,7 @@ model.plot() # Plot the decision function with the data
 # ! git add dataset.tsv.dvc model.pkl.dvc .gitignore
 
 # %% [markdown]
-# At this point we can commit our changes and optionally tag the commit.
+# At this point we can commit our changes and optionally tag the commit with the [git tag](https://git-scm.com/docs/git-tag) command.
 #
 # Here, we will call this the "v1.0" of our experiment, for which we used 208 subjects:
 
@@ -381,7 +423,7 @@ model.plot()
 #
 # Instead we changed `dataset.tsv` (we added 208 new subjects) and `model.pkl` (we re-trained and saved our toy model). These files aren't tracked with [Git](https://git-scm.com), but with [DVC](https://dvc.org) !
 #
-# This means that we should use a [DVC](https://dvc.org) command and, again, [DVC](https://dvc.org) makes it very easy for us because the command is almost the same:
+# This means that we should use a [DVC](https://dvc.org) command rather than a [Git](https://git-scm.com) command. Again, [DVC](https://dvc.org) makes it very easy for us because the command to use is [dvc status](https://dvc.org/doc/command-reference/status) which should look familiar:
 
 # %%
 # ! dvc status
@@ -406,6 +448,22 @@ model.plot()
 #
 # Note that, although our data just doubled in size, the metadata that we are tracking with [Git](https://git-scm.com) didn't change at all, we still have a `.dvc` file with 5 lines !
 #
+# However there is no magic here. The data tracked with [Git](https://git-scm.com) didn't change much in size, but our cache did change:
+
+# %%
+# ! tree .dvc/cache/files/md5
+
+# %% [markdown]
+# The cache contains both version of our data:
+
+# %%
+# ! wc -l  .dvc/cache/files/md5/58/ac275459541571c78e9292635f63c8
+# ! wc -l  .dvc/cache/files/md5/41/7fedd2a5927bfc5284ddc01b74ad2a
+
+# %% [markdown]
+# For projects with long history, the cache growth can become an issue. Although this is beyond the scope of this tutorial, note that [DVC](https://dvc.org) has some commands like [dvc gc](https://dvc.org/doc/command-reference/gc) which allows you to clean old data entries.
+
+# %% [markdown]
 # OK, this is the part where we use [Git](https://git-scm.com) ! And, again, [DVC](https://dvc.org) is helping us by suggesting our next move !
 #
 # Let's add the changes to the `.dvc` files with [Git](https://git-scm.com):
@@ -456,7 +514,7 @@ model.plot()
 # %% [markdown]
 # [Git](https://git-scm.com) is telling us that we are in "detached HEAD" state, which could sound like a scary thing, but it only means that we are on a commit that doesn't have a branch.
 #
-# Let's see what the `git status` command tells us:
+# Let's see what the [git status](https://git-scm.com/docs/git-status) command tells us:
 
 # %%
 # ! git status
@@ -478,7 +536,7 @@ model.plot()
 # ! cat dataset.tsv.dvc
 
 # %% [markdown]
-# You need to use [DVC](https://dvc.org) to restore the data file itself:
+# The `.dvc` file points to the first `dataset.tsv` version but the file in our workspace was not updated. You need to use [DVC](https://dvc.org) to perform this update:
 
 # %%
 # ! dvc checkout
