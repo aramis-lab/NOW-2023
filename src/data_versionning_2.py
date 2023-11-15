@@ -15,23 +15,35 @@
 # %% [markdown]
 # # Chapter 3 : Versioning large datasets with DVC
 #
-# In the second chapter of the second part of this tutorial, we saw how to install and use [DVC](https://dvc.org) to version code and data in a simple way.
-#
-# However, our input dataset was extremely simple and could have been versionned with [Git](https://git-scm.com) without difficulty. 
+# In the previous chapter, we saw how to install and use [DVC](https://dvc.org) to version code and data in a simple way. However, our input dataset was extremely simple and could have been versionned with [Git](https://git-scm.com) without difficulty.
 #
 # The main objective of this second chapter is to show the true power of [DVC](https://dvc.org).
 #
-# We will keep our objective of predicting AD vs Control subjects, but instead of assuming a simple preprocessed dataset with hypocampus volumes already extracted, we will work directly with brain images and train a deep learning model to perform this task.
+# We will keep our objective of predicting [Alzheimer's disease](https://en.wikipedia.org/wiki/Alzheimer%27s_disease) (AD) vs Control subjects, but instead of assuming a simple preprocessed dataset with the [hippocampus](https://en.wikipedia.org/wiki/Hippocampus) volumes already computed, we will work directly with brain images and train a deep learning model to perform this task.
 #
-# This chapter also aims at showing some more advanced features of [DVC](https://dvc.org) like experiment managment. We will define our experiment as a dependency graph using [DVC](https://dvc.org) commands and see how easily we can reproduce past experiment with this infrastructure.
+# This chapter also aims at showing some more advanced features of [DVC](https://dvc.org) like [data pipelines](https://dvc.org/doc/start/data-management/data-pipelines).
+#
+# We will define our experiment as a pipeline using [DVC](https://dvc.org) commands, and see how easily we can reproduce past experiments with this infrastructure.
 #
 # Let's dive in !
+
+# %% [markdown]
+# ## Install dependencies
 #
-# ## Setup the repo
+# `````{admonition} Virtual environments
+# :class: tip
 #
-# Since this is a new notebook meant to be independant from the notebook of the first chapters, we will start a new project from scratch.
+# We strongly encourage you to create a virtual environment specifically for this tutorial.
+# If you haven't done it already and if you are using conda, you can do the following:
 #
-# Start by configuring the [Git](https://git-scm.com) and [DVC](https://dvc.org) repo:
+# ```bash
+# $ conda create --name now python=3.10
+# $ conda activate now
+# ```
+#
+# `````
+#
+# In order to focus on the code and data management side of things, we abstracted as much code as possible. To do so, we created a very small Python library called `now_2023` that we will use in order to plot brain images, train deep learning models, and save results. We can install this library with pip:
 
 # %%
 # Dirty for now...
@@ -43,6 +55,15 @@
 
 # %%
 # ! pip install dvc
+
+# %% [markdown]
+# ## Setup the repo
+#
+# Since this is a new notebook meant to be independant from the notebooks of the first chapters, we will start a new project from scratch.
+#
+# Start by configuring the [Git](https://git-scm.com) and [DVC](https://dvc.org) repo:
+
+# %%
 # ! git init
 # ! dvc init
 
@@ -52,14 +73,16 @@
 # %%
 # ! git config --local user.email "john.doe@inria.fr"
 # ! git config --local user.name "John Doe"
-
-# %%
 # ! git commit -m "initialize DVC"
 
 # %% [markdown]
-# Throughout this tutorial, we will write things to files. Usually, you would do this using your favorite IDE. However, we need this tutorial to be runnable as a notebook (for example for the attendees running it on Collab). Because of this, we will be using IPython magic commands `writefile` and `run` in order to write to a file the content of the cell, and run a given python script. If you are following locally, you can of course edit the different files directly !
+# ```{note}
+# Throughout this tutorial, we will write things to files. Usually, you would do this using your favorite IDE. However, we need this tutorial to be runnable as a notebook (for example for the attendees running it on Collab). Because of this, we will be using IPython magic commands `%%writefile` and `%run` in order to write to a file the content of a cell, and run a given python script.
 #
-# Add some patterns to the `.gitignore` file in order to not display IPython notebooks related files when doing a `git status`:
+# If you are following locally, you can of course edit the different files directly !
+# ```
+#
+# Let's add some patterns to the [.gitignore](https://git-scm.com/docs/gitignore) file in order to not display IPython notebooks related files when doing a [git status](https://git-scm.com/docs/git-status):
 
 # %%
 # %%writefile -a .gitignore
@@ -70,22 +93,35 @@ __pycache__
 .ipynb_checkpoints
 
 # %% [markdown]
-# ## Dataset
+# ## Getting the input dataset
 #
-# In this session we use the images from a public research project: OASIS-1. Two labels exist in this dataset:
+# In this session we use the images from a public research project: [OASIS-1](https://www.oasis-brains.org). Two labels exist in this dataset:
 #
 # - CN (Cognitively Normal) for healthy participants.
-# - AD (Alzheimer’s Disease) for patients affected by Alzheimer’s disease.
+# - AD (Alzheimer’s Disease) for patients affected by [Alzheimer's disease](https://en.wikipedia.org/wiki/Alzheimer%27s_disease).
 #
 # The original images were preprocessed using [Clinica](https://www.clinica.run): a software platform for clinical neuroimaging studies.
 #
-# Preprocessed images and other files are distributed in a tarball, if you haven't downloaded the images before, run the following commands to download and extract them:
+# Preprocessed images and other files are distributed in a tarball, if you haven't downloaded the images before the tutorial, run the following commands to download and extract them:
 
 # %%
 # Only run if necessary !
 #
 # # ! wget --no-check-certificate --show-progress https://aramislab.paris.inria.fr/files/data/databases/DL4MI/OASIS-1-dataset_pt_new.tar.gz
 # # ! tar -xzf OASIS-1-dataset_pt_new.tar.gz
+
+# %% [markdown]
+# ## Write a Python script to run the experiment
+#
+# Let's start writing a Python file which will contain the code required to run our experiment. Our objective is to be able to run
+#
+# ```
+# $ python run_experiment.py
+# ```
+#
+# from the command-line to run the full experiment.
+#
+# Let's start by defining the path to the raw dataset folder we just downloaded. If you run the cell above, it should be `./OASIS-1_dataset`. If you downloaded the data before the workshop, it is probably somewhere else on your machine.
 
 # %%
 # %%writefile -a run_experiment.py 
@@ -95,11 +131,25 @@ from pathlib import Path
 # oasis_folder = Path("./OASIS-1_dataset/")
 oasis_folder = Path("/Users/nicolas.gensollen/NOW_2023/OASIS-1_dataset/")
 
+# %% [markdown]
+# Executing the previous cell wrote its content to our file, let's also execute this file to have the declared imports and variables in this Python session:
+
 # %%
 # %run run_experiment.py
 
+# %%
+print([file.name for file in oasis_folder.iterdir()])
+
 # %% [markdown]
-# Once downloaded, you can take a look at it:
+# The raw dataset contains:
+#
+# - a `tsv_files` folder in which we have metadata relative to the different subjects
+# - a `README.md` file giving some information on the dataset
+# - a `CAPS` folder holding the preprocessed brain images
+# - a `raw` folder holding the raw brain images
+
+# %% [markdown]
+# At the same time, we will write a second Python file `prepare_train_validation_sets.py` which will be responsible for splitting our list of subjects into a training set and a validation set. This is important because we will compute validation metrics once our model has been trained:
 
 # %%
 # %%writefile -a prepare_train_validation_sets.py
@@ -133,10 +183,16 @@ OASIS_df = pd.read_csv(
 # %%
 # %run prepare_train_validation_sets.py
 
+# %% [markdown]
+# Let's take a look at some statistics in order to better understand our data:
+
 # %%
 print(OASIS_df.head())
 
 _ = OASIS_df.hist(figsize=(16, 8))
+
+# %% [markdown]
+# From these graphics, it’s possible to have an overview of the distribution of the data, for the numerical values. For example, the educational level is well distributed among the participants of the study. Also, most of the subjects are young (around 20 years old) and healthy (MMS score equals 30 and null CDR score).
 
 # %%
 from now_2023.utils import characteristics_table
@@ -153,25 +209,26 @@ population_df
 # - Segmentation of grey matter.
 # - Conversion to tensor format (.pt).
 #
-# As mentioned above, to obtain the preprocessed images, we used some pipelines provided by Clinica and ClinicaDL in order to:
+# As mentioned above, to obtain the preprocessed images, we used some pipelines provided by [Clinica](https://www.clinica.run) and [ClinicaDL](https://clinicadl.readthedocs.io/en/latest/) in order to:
 #
-# - Convert the original dataset to BIDS format ([clinica convert oasis-2-bids](https://aramislab.paris.inria.fr/docs/public/latest/Converters/OASIS2BIDS/)).
+# - Convert the original dataset to [BIDS](https://bids-specification.readthedocs.io/en/stable/) format ([clinica convert oasis-2-bids](https://aramislab.paris.inria.fr/docs/public/latest/Converters/OASIS2BIDS/)).
 # - Get the non-linear registration and segmentation of grey mater (pipeline [t1-volume](https://aramislab.paris.inria.fr/docs/public/latest/Pipelines/T1_Volume/)).
 # - Obtain the preprocessed images in tensor format ([tensor extraction using ClinicaDL, clinicadl extract](https://clinicadl.readthedocs.io/en/stable/Preprocessing/Extract/)).
 # - The preprocessed images are store in the [CAPS folder structure](http://www.clinica.run/doc/CAPS/Introduction/) and all have the same size (121x145x121).
 #
-# To facilitate the training and avoid overfitting due to the limited amount of data, the model won’t use the full image but only a part of the image (size 30x40x30) centered on a specific neuroanatomical region: the hippocampus (HC). This structure is known to be linked to memory, and is atrophied in the majority of cases of Alzheimer’s disease patients.
+# To facilitate the training and avoid overfitting due to the limited amount of data, the model won’t use the full image but only a part of the image (size 30x40x30) centered on a specific neuroanatomical region: the [hippocampus](https://en.wikipedia.org/wiki/Hippocampus) (HC). This structure is known to be linked to memory, and is atrophied in the majority of cases of Alzheimer’s disease patients.
 #
 # Before going further, let's take a look at the images we have downloaded and let's compute a cropped image of the left HC for a randomly selected subject:
 
 # %%
-# %%writefile -a run_experiment.py
-
 import torch
 from now_2023.plotting import plot_image, plot_tensor
 from now_2023.utils import CropLeftHC
 
+# Select a random subject
 subject = 'sub-OASIS10003'
+
+# The path to the hc image
 image_folder = (
     oasis_folder /
     "CAPS" /
@@ -182,11 +239,13 @@ image_folder = (
     "image_based" /
     "custom"
 )
+
+# The image file name as a specific structure
 image_filename = f"{subject}_ses-M00_T1w_segm-graymatter_space-Ixi549Space_modulated-off_probability.pt"
 preprocessed_pt = torch.load(image_folder / image_filename)
 
-# %%
-# %run run_experiment.py
+# %% [markdown]
+# You can use the `plot_image()` and `plot_tensor()` functions from the `now_2023` library to visualize these images. Do not hesitate to play with the `cut_coords` argument to view different slices:
 
 # %%
 plot_image(
@@ -208,25 +267,23 @@ plot_tensor(
 # %% [markdown]
 # ## Use only the left HC
 #
-# We are going to generate a new dataset consisting only of images of the left hippocampus (the last image above). 
+# We are going to generate a new dataset consisting only of images of the left [hippocampus](https://en.wikipedia.org/wiki/Hippocampus). Our dataset will basically consist of images like the last image above. 
 #
-# For simplicity, this is the dataset that we will consider as our input dataset, and thus the dataset we will version. In other word, we will assume that we didn't computed the cropped images from the raw dataset downloaded above, but versioning the raw dataset would work in the same way.
+# For simplicity, this is the dataset that we will consider as our input dataset, just like we pretended that the TSV file with the HC volumes computed was our input dataset in the previous chapter. This also means that the dataset we are about to generate will be the one we will version.
 #
-# Note also that to improve the training and reduce overfitting, we can add a random shift to the cropping function. This means that the bounding box around the hippocampus may be shifted by a limited amount of voxels in each of the three directions.
+# ```{note}
+# Note that there is nothing preventing us to version the raw dataset. We are doing this because we will pretend to receive a data update later on consisting of the right HC images.
+# ```
+#
+# Note also that to improve the training and reduce overfitting, we can add a random shift to the cropping function. This means that the bounding box around the [hippocampus](https://en.wikipedia.org/wiki/Hippocampus) may be shifted by a limited amount of voxels in each of the three directions.
 #
 # Let's generate our dataset:
 
 # %%
-# %%writefile -a run_experiment.py
-
 from now_2023.data_generation import generate_cropped_hc_dataset
 
 data_folder = Path("./data")
 
-# %%
-# %run run_experiment.py
-
-# %%
 generate_cropped_hc_dataset(
     oasis_folder,
     hemi="left",
@@ -235,7 +292,7 @@ generate_cropped_hc_dataset(
 )
 
 # %% [markdown]
-# This should have created a new `data` folder in the current working space, which should have the following structure:
+# This should have created a new `data` folder in the current workspace, which should have the following structure:
 
 # %%
 # ! tree data | head -n 14
@@ -243,7 +300,7 @@ generate_cropped_hc_dataset(
 # %% [markdown]
 # As you can see, we have one tensor image for each subject, representing the extracted left hippocampus.
 #
-# Let's take a look at some of these images:
+# Let's take a look at some of these images. To do so, you can use the `plot_hc()` function from the `now_2023` library which is a wrapper around the `plot_tensor()` function you used before. Again, feel free to play with the parameters to view different slices or different subjects: 
 
 # %%
 from now_2023.plotting import plot_hc
@@ -279,10 +336,54 @@ print("*" * 50)
 train_df.to_csv("train.csv")
 valid_df.to_csv("validation.csv")
 
+# %% [markdown]
+# At this point, the step of our experiment consisting of preparing the training and validation sets is complete. We could simply run 
+#
+# ```bash
+# python prepare_train_validation_sets.py
+# ```
+#
+# but we are going to see another way to do that. Instead of just running this command, we are going to use [DVC](https://dvc.org) to codify our first experimental step. To do that, we will rely on the [dvc stage](https://dvc.org/doc/command-reference/stage) comand which is a bit more complicated than the previous [DVC](https://dvc.org) commands we saw before:
+
 # %%
-# ! dvc stage add -n prepare_train_validation -d prepare_train_validation_sets.py -d data \
-#   -o train.csv -o validation.csv python prepare_train_validation_sets.py
+# ! dvc stage add -n prepare_train_validation \
+#   -d prepare_train_validation_sets.py -d data \
+#   -o train.csv -o validation.csv \
+#   python prepare_train_validation_sets.py
+
+# %% [markdown]
+# Let's take a closer look at this long command:
+#
+# - The `-n` option enables us to give a name to this step. In our case, we named it "prepare_train_validation".
+# - The `-d` option enables us to declare dependencies, that is things on which this step depends. In our case, the step depends on the input data (the `data` folder), and the python file itself (`prepare_train_validation_sets.py`).
+# - The `-o` option enables ut to declare outputs, that is things that are produced by this step. In our case, the step produces two CSV files (`train.csv` and `validation.csv`)
+# - The final part of the command tells [DVC](https://dvc.org) the command it should run to perform this step. In our case, it needs to run `python prepare_train_validation_sets.py` to run the Python script.
+#
+# OK, great, but what did this command actually do ?
+#
+# As you can see from its output, it generated a `dvc.yaml` file which encode our experiment stage as well as its dependencies. Let's have a look at it:
+
+# %%
+# ! cat dvc.yaml
+
+# %% [markdown]
+# As you can see, it is pretty easy to read and understand. However, [dvc stage](https://dvc.org/doc/command-reference/stage) didn't run anything, it just generated this file. To run our first step, we can use the [dvc repro](https://dvc.org/doc/command-reference/repro) command:
+
+# %%
 # ! dvc repro
+
+# %% [markdown]
+# In the output of dvc repro we can see the output generated by our Python scripts as well as the output generated by [DVC](https://dvc.org). It looks like [DVC](https://dvc.org) generated a `dvc.lock` file:
+
+# %%
+# ! cat dvc.lock
+
+# %% [markdown]
+# We won't go into the details here, but the main idea is that this lock file is what [DVC](https://dvc.org) uses to know whether it should re-run a given stage given the state of the current workspace. It basically does this by computing the hash values of the stage dependencies and outputs and comparing these values to the ones in this file. If there is at least one mismatch, then the stage should be run again, otherwise dvc will use the cached inputs and outputs.
+#
+# Note that these new files (`dvc.yaml` and `dvc.lock`) are still very small files which size does not depend on the input data size. This means that we are totally fine versioning them with Git, and this is precisely what [DVC](https://dvc.org) is telling us to do here.
+#
+# Let's add the data with dvc add (we still haven't done that...), and do the same with [Git](https://git-scm.com) for the files we have generated (`dvc.yaml`, `dvc.lock`, `data.dvc`), and modified (`.gitignore`):
 
 # %%
 # ! dvc add data
@@ -290,6 +391,9 @@ valid_df.to_csv("validation.csv")
 
 # %%
 # ! git status
+
+# %%
+# ! dvc dag
 
 # %% [markdown]
 # ### Model
@@ -320,6 +424,8 @@ import dvc.api
 import json
 import pandas as pd
 from now_2023.models import CNNModel
+
+data_folder = Path("./data")
 
 train_df = pd.read_csv("train.csv")
 valid_df = pd.read_csv("validation.csv")
@@ -363,7 +469,7 @@ with open("notes.txt", "w") as fp:
 # The code above implements the core of our experiment and does a few things:
 #
 # - Load the train and validation dataframes from disk. This is required because we are passing these dataframes between the first and second stage of our experiment.
-# - Retrieve the hyper-parameters we defined in the `params.yaml` file. We use the DVC Python API to do so.
+# - Retrieve the hyper-parameters we defined in the `params.yaml` file. We use the [DVC Python API](https://dvc.org/doc/api-reference) to do so.
 # - Instantiate a model with the obtained hyper-parameters.
 # - Train the model on the input data.
 # - Compute some metrics like accuracy, loss and so on...
@@ -371,7 +477,7 @@ with open("notes.txt", "w") as fp:
 # - Save the metrics as JSON files.
 # - Write a small human-readable note describing what we did. This could be useful, for example, to your future self revisiting this experiment in a few months or years...
 #
-# Now, we need to define a new stage to our experiment using the `dvc stage` command. We will call this stage `run_experiment`. This stage requires three parameters (defined in the `params.yaml` file), and has fours dependencies (the `run_experiment.py` file which is the code implementing what needs to be done in this stage, the `data` folder which is our input dataset, and the two csv files `train.csv` and `validation.csv` which define the training and validation sets.
+# Now, we need to define a new stage to our experiment using the [dvc stage](https://dvc.org/doc/command-reference/stage) command. We will call this stage `run_experiment`. This stage requires three parameters (defined in the `params.yaml` file), and has fours dependencies (the `run_experiment.py` file which is the code implementing what needs to be done in this stage, the `data` folder which is our input dataset, and the two csv files `train.csv` and `validation.csv` which define the training and validation sets.
 #
 # In addition, it generates two outputs (the model's weights after training, and our small text file of notes), and one metric file.
 #
@@ -413,6 +519,12 @@ with open("notes.txt", "w") as fp:
 
 # %%
 # ! dvc repro
+
+# %% [markdown]
+# We can see that our cache is much more complicated than the one we had in the previous chapter:
+
+# %%
+# ! tree .dvc/cache/files/md5 | head -n 15
 
 # %% [markdown]
 # ## Use both the left and right HC
@@ -461,7 +573,9 @@ train_df.to_csv("train.csv")
 valid_df.to_csv("validation.csv")
 
 # %% [markdown]
+# ```{note}
 # Note that, for simplificity due to the constraints of the notebook format, we just appenned the previous code to the `prepare_train_validation_sets.py` file instead of modifying it, which would be much cleaner. Feel free to open the python file and replace the relevant portion of the code with the previous cell.
+# ```
 #
 # And... that's all we need to do. We can call `dvc repro` to run the full experiment with the new dataset:
 
