@@ -2,11 +2,11 @@ format: jb-book
 root: index
 title: NOW 2023
 parts:
-- caption: Part 1 - Code versionning with GIT
+- caption: Part 1 - Code versioning with GIT
   chapters:
-  - file: notebooks/code_versionning_intro
+  - file: notebooks/code_versioning_intro
   - file: notebooks/code_versionning
-- caption: Part 2 - Data versionning with DVC
+- caption: Part 2 - Data versioning with DVC
   chapters:
   - file: notebooks/data_versionning_intro
   - file: notebooks/data_versionning
