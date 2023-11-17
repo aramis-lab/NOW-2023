@@ -49,7 +49,7 @@
 
 # %%
 # ! git config --local user.name "John Doe"
-# ! git config --global user.email john.doe@inria.fr
+# ! git config --local user.email john.doe@inria.fr
 # %% [markdown]
 # Create a `README.md` file and then check the state of your local copy:
 # %%
