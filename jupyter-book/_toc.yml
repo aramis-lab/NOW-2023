@@ -2,6 +2,9 @@ format: jb-book
 root: index
 title: NOW 2023
 parts:
+- caption: Preamble
+  chapters:
+  - file: notebooks/preamble
 - caption: Part 1 - Code versioning with GIT
   chapters:
   - file: notebooks/code_versioning_intro
