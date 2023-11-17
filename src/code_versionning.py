@@ -17,6 +17,10 @@
 #
 # In this chapter, we will install [Git](https://git-scm.com) and take a look at how it works and how to version code.
 #
+# ```{note}
+# The content of this chapter has been adapted from a tutorial made by *Alexandre Abadie* and *Kim Tâm Huynh* from the [INRIA SED of Paris](https://sed.paris.inria.fr).
+# ```
+#
 # ## Getting started
 #
 # First you will start a small Python project

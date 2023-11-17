@@ -15,16 +15,20 @@
 # %% [markdown]
 # # Chapter 1 : Introduction to code versioning
 #
-# The objective of this chapter is to give a brief overview of Git and the main concepts behind its basic usage.
+# The objective of this chapter is to give a brief overview of [Git](https://git-scm.com) and the main concepts behind its basic usage.
 #
 # We will use these concepts in the next chapter thoughout the development of a small Python library.
+#
+# ```{note}
+# The content of this chapter has been adapted from a Git tutorial made by *Mathilde Lannes* and *Séverine Candelier* from the ICM.
+# ```
 
 # %% [markdown]
 # ## What is git ?
 #
-# - Git is a version-control system. The purpose of Git is to manage a code project or a set of files, as they change over time.
-# - Git stores this information in a data structure called a repository.
-# - The Git repository is stored in the same directory as the project itself, in a hidden subdirecotry called `.git`.
+# - [Git](https://git-scm.com) is a version-control system. The purpose of [Git](https://git-scm.com) is to manage a code project or a set of files, as they **change over time**.
+# - [Git](https://git-scm.com) stores this information in a data structure called a **repository**.
+# - The [Git](https://git-scm.com) repository is stored in the same directory as the project itself, in a hidden subdirecotry called `.git`.
 
 # %% [markdown]
 # ## Why do you need git ?
@@ -45,18 +49,25 @@
 # - What is in your online repository (remote)
 # - What is in your local repository.
 #
-# There won't be any modification on the remote server (Github, Gitlab...) until you publish it.
+# There won't be any modification on the remote server ([Github](https://github.com), [Gitlab](https://gitlab.com)...) until you publish it.
+#
+# ```{note}
+# Note that you can have multiple remotes and multiple local copies of the same repository.
+# ```
 
 # %% [markdown]
 # ## What is a commit ?
 #
 # It is a snapshot of modified code.
 
+# %%
+from IPython.display import Image
+Image(filename="../images/git-commit.png")
+
 # %% [markdown]
 # ## Git workflow
 
 # %%
-from IPython.display import Image
 Image(filename="../images/git-workflow.png")
 
 # %% [markdown]
@@ -67,7 +78,7 @@ Image(filename="../images/git-workflow.png")
 # %% [markdown]
 # ### Add to the staging area
 #
-# This is done with the [git add]() command:
+# This is done with the [git add](https://git-scm.com/docs/git-add) command:
 #
 # ```
 # $ git add myfile
@@ -75,7 +86,7 @@ Image(filename="../images/git-workflow.png")
 #
 # ### Add staged changes to a commit
 #
-# This is done with the [git commit]() command:
+# This is done with the [git commit](https://git-scm.com/docs/git-commit) command:
 #
 # ```
 # $ git commit -m "My commit message"
@@ -83,7 +94,7 @@ Image(filename="../images/git-workflow.png")
 #
 # ### Check where you are
 #
-# You can get information with the [git status]() command. This command will never hurt you but will probably save you a lot, so do not hesitate to use it often !
+# You can get information with the [git status](https://git-scm.com/docs/git-status) command. This command will never hurt you but will probably save you a lot, so do not hesitate to use it often !
 #
 # ```
 # $  git status
@@ -105,7 +116,7 @@ Image(filename="../images/git-workflow.png")
 # %% [markdown]
 # ### Publish commits
 #
-# You can publish your local work to a remote with the [git push]() command. When you push, your local version becomes the version of the remote:
+# You can publish your local work to a remote with the [git push](https://git-scm.com/docs/git-push) command. When you push, your local version becomes the version of the remote:
 #
 # ```
 # $ git push
@@ -113,10 +124,25 @@ Image(filename="../images/git-workflow.png")
 #
 # ### Getting latest commits from your co-workers
 #
-# You can retrieve locally what is on a remote with the [git pull]() command. When you pull, you are merging the version of the remote inside your local repository:
+# You can retrieve locally what is on a remote with the [git pull](https://git-scm.com/docs/git-pull) command. When you pull, you are merging the version of the remote inside your local repository:
 #
 # ```
 # $ git pull
+# ```
+
+# %% [markdown]
+# ### Cancel what you have done
+#
+# You can change a modified file in the working directory to the HEAD version with the [git checkout](https://git-scm.com/docs/git-checkout) command and the file name as argument:
+#
+# ```
+# $ git checkout myfile
+# ```
+#
+# You can create a commit to undo your last commit(s) with the [git revert](https://git-scm.com/docs/git-revert) command:
+#
+# ```
+# $ git revert
 # ```
 
 # %% [markdown]
@@ -128,7 +154,7 @@ Image(filename="../images/git-workflow.png")
 #
 # ### How to use branches
 #
-# To create a new branch, you can use the [git checkout]() command with the `b` option:
+# To create a new branch, you can use the [git checkout](https://git-scm.com/docs/git-checkout) command with the `b` option:
 #
 # ```
 # $ git checkout -b mybranch
@@ -138,7 +164,7 @@ Image(filename="../images/git-workflow.png")
 Image(filename="../images/git-branch-1.png")
 
 # %% [markdown]
-# You can list the different branches and verify on which branch you are with the [git branch]() command:
+# You can list the different branches and verify on which branch you are with the [git branch](https://git-scm.com/docs/git-branch) command:
 #
 # ```
 # $ git branch
@@ -169,7 +195,7 @@ Image(filename="../images/git-branch-3.png")
 #
 # However, you must resolve the conflicts if the SAME portions of code have been touched.
 #
-# You can perform a merge with the [git merge]() command:
+# You can perform a merge with the [git merge](https://git-scm.com/docs/git-merge) command:
 #
 # ```
 # $ git checkout main
