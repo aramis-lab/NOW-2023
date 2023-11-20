@@ -4,3 +4,9 @@ sphinx-design
 myst-parser
 myst-nb
 jupyter-book==0.15.*
+now-2023>=0.1.3
+pytest
+pandas
+numpy
+nibabel
+torch

@@ -200,79 +200,22 @@ df.tail()
 # %% [markdown]
 # Recall that this tutorial is on code and data versioning, not on machine or deep learning ! In orther words, we won't focus on the machine learning aspect of things, but rather on the code and data management aspects.
 #
-# This means that we will treat models as black boxes. For simplicity, models have been wrapped in custom classes offering a very simple API:
+# This means that **we will treat models as black boxes**. For simplicity, we will rely in this tutorial on [now-2023](https://now-2023.readthedocs.io/en/latest/index.html), a small library created in order to offer a very simple API. In this chapter, we will use the [ToyModel](https://now-2023.readthedocs.io/en/latest/modules/generated/now_2023.models.ToyModel.html#now_2023.models.ToyModel), which has the following public API:
 #
-# - `model.fit()` for fitting the model with some input data
-# - `model.save()` for saving the model's weights to disk
-# - `model.plot()` to give us some visuals
+# - `from_dataframe()` for simple instantiation.
+# - `fit()` for fitting the model with some input data.
+# - `save()` for saving the model's weights to disk.
+# - `plot()` to give us some visuals.
 #
-# Here, we use a toy model (a simple SVC), and we fit it with the data we just downloaded:
+# If you are running this notebook locally and have followed the installation steps from the README, then now-2023 should already be installed. Otherwise, or if you are running this notebook on Collab, you need to install it:
 
 # %%
-import pickle
-import pandas as pd
-import numpy as np
-from sklearn import svm
-import matplotlib.pyplot as plt
-
-class Model:
-    """Simple interface to a toy model for classification."""
-    def __init__(self, X: np.ndarray, y: np.ndarray):
-        self.X =X
-        self.y = y
-        self.min_x = np.min(self.X[:, 0])
-        self.max_x = np.max(self.X[:, 0])
-        self.min_y = np.min(self.X[:, 1])
-        self.max_y = np.max(self.X[:, 1])
-        self.estimator = svm.SVC()
-
-    @property
-    def n_samples(self) -> int:
-        return self.X.shape[0]
-
-    @property
-    def bbox(self) -> list[float]:
-        return [self.min_x, self.max_x, self.min_y, self.max_y]
-
-    @classmethod
-    def from_dataframe(cls, df: pd.DataFrame, predictive_features: list[str], target_feature: str):
-        X = np.array(df[predictive_features])
-        y = np.array([1 if x == "AD" else 0 for x in df[target_feature].values])
-        return cls(X, y)
-
-    def fit(self):
-        self.estimator.fit(self.X, self.y)
-
-    def save(self):
-        with open("model.pkl", "wb") as fp:
-            pickle.dump(self.estimator, fp)
-
-    def plot(self):
-        xx, yy = np.meshgrid(
-            np.linspace(self.min_x, self.max_x, 500),
-            np.linspace(self.min_y, self.max_y, 500),
-        )
-        Z = self.estimator.decision_function(np.c_[xx.ravel(), yy.ravel()])
-        Z = Z.reshape(xx.shape)
-        plt.imshow(
-            Z,
-            interpolation="nearest",
-            extent=(xx.min(), xx.max(), yy.min(), yy.max()),
-            aspect="auto",
-            origin="lower",
-            cmap=plt.cm.PuOr_r,
-        )
-        contours = plt.contour(xx, yy, Z, levels=[0], linewidths=2, linestyles="dashed")
-        plt.scatter(self.X[:, 0], self.X[:, 1], s=30, c=self.y, cmap=plt.cm.Paired, edgecolors="k")
-        plt.xticks(())
-        plt.yticks(())
-        plt.title(f"Number of sample = {self.n_samples}")
-        plt.axis(self.bbox)
-        plt.show()
-
+# pip install now-2023
 
 # %%
-model = Model.from_dataframe(
+from now_2023.models import ToyModel
+
+model = ToyModel.from_dataframe(
     df,
     predictive_features=["HC_left_volume", "HC_right_volume"],
     target_feature="diagnosis",
@@ -397,7 +340,7 @@ print(df.tail(3))
 # Let's create a new instance of our toy model, and fit it with our new dataset:
 
 # %%
-model = Model.from_dataframe(
+model = ToyModel.from_dataframe(
     df,
     predictive_features=["HC_left_volume", "HC_right_volume"],
     target_feature="diagnosis",

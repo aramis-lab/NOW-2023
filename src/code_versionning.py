@@ -125,9 +125,6 @@ def test_add(a, b, res):
 # Use `pytest` (install it using `pip install pytest`) to run the tests, verify 
 # that they pass and then commit `test_myfuncs.py` (and only this one!):
 # %%
-# ! pip install pytest
-
-# %%
 # ! pytest test_myfuncs.py
 # %% [markdown]
 # Note that you can use the verbose option (`-v`) to have more information:
@@ -698,7 +695,7 @@ def test_power(a, b, res):
 # You now have to switch the commit that we think is good, test it and tell git:
 # %%
 # Change the hash value to the one in the output of the cell above
-# ! git checkout 6ed5a35
+# ! git checkout ed26d1e
 # %%
 # ! pytest -v
 
@@ -718,7 +715,7 @@ def test_power(a, b, res):
 # it's content:
 # %%
 # Change the hash value to the one in the output of the cell above
-# ! git show ba855a2
+# ! git show d4a63b8
 # %% [markdown]
 # Point 5. reveals that the problem comes from one the multiply test case.
 #

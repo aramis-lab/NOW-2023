@@ -43,18 +43,19 @@
 #
 # `````
 #
-# In order to focus on the code and data management side of things, we abstracted as much code as possible. To do so, we created a very small Python library called `now_2023` that we will use in order to plot brain images, train deep learning models, and save results. We can install this library with pip:
+# In order to focus on the code and data management side of things, we abstracted as much code as possible. To do so, we created a very small Python library called [now_2023](https://now-2023.readthedocs.io/en/latest/index.html) that we will use in order to plot brain images, train deep learning models, and save results.
+#
+# If you are running this notebook on Collab, then you need to install it:
 
 # %%
-# Dirty for now...
-# # ! pip install git+https://github.com/aramis-lab/NOW-2023-lib.git/
+# # ! pip install now-2023
 
 # %%
 # If you are running on collab or if you don't have tree installed:
 # # ! apt-get install tree
 
 # %%
-# # ! pip install dvc
+# ! pip install dvc
 
 # %% [markdown]
 # ## Setup the repo
@@ -130,7 +131,12 @@ __pycache__
 
 from pathlib import Path
 
+# If you just downloaded the data using the cell above, then uncomment:
+#
 # oasis_folder = Path("./OASIS-1_dataset/")
+#
+# Otherwise, modify this path to the folder in which you extracted the data:
+#
 oasis_folder = Path("/Users/nicolas.gensollen/NOW_2023/OASIS-1_dataset/")
 
 # %% [markdown]
@@ -195,6 +201,8 @@ _ = OASIS_df.hist(figsize=(16, 8))
 
 # %% [markdown]
 # From these graphics, it’s possible to have an overview of the distribution of the data, for the numerical values. For example, the educational level is well distributed among the participants of the study. Also, most of the subjects are young (around 20 years old) and healthy (MMS score equals 30 and null CDR score).
+#
+# We can use the [characteristics_table](https://now-2023.readthedocs.io/en/latest/modules/generated/now_2023.utils.characteristics_table.html#now_2023.utils.characteristics_table) function from [now-2023](https://now-2023.readthedocs.io/en/latest/index.html) to get some useful statistics at the population level:
 
 # %%
 from now_2023.utils import characteristics_table
@@ -224,8 +232,6 @@ population_df
 
 # %%
 import torch
-from now_2023.plotting import plot_image, plot_tensor
-from now_2023.utils import CropLeftHC
 
 # Select a random subject
 subject = 'sub-OASIS10003'
@@ -247,9 +253,18 @@ image_filename = f"{subject}_ses-M00_T1w_segm-graymatter_space-Ixi549Space_modul
 preprocessed_pt = torch.load(image_folder / image_filename)
 
 # %% [markdown]
-# You can use the `plot_image()` and `plot_tensor()` functions from the `now_2023` library to visualize these images. Do not hesitate to play with the `cut_coords` argument to view different slices:
+# You can use the [CropLeftHC](https://now-2023.readthedocs.io/en/latest/modules/generated/now_2023.utils.CropLeftHC.html) class to automatically crop the left HC from the preprocessed tensor images. You can also use [plot_image](https://now-2023.readthedocs.io/en/latest/modules/generated/now_2023.plotting.plot_image.html) and [plot_tensor](https://now-2023.readthedocs.io/en/latest/modules/generated/now_2023.plotting.plot_tensor.html) functions from the [now-2023](https://now-2023.readthedocs.io/en/latest/index.html) library to visualize these images.
+#
+# `````{admonition} View different slices
+# :class: tip
+#
+# Do not hesitate to play with the `cut_coords` argument to view different slices!
+# `````
 
 # %%
+from now_2023.plotting import plot_image, plot_tensor
+from now_2023.utils import CropLeftHC
+
 plot_image(
     oasis_folder / "raw" / f"{subject}_ses-M00_T1w.nii.gz",
     cut_coords=(78, 122, 173),
@@ -279,7 +294,7 @@ plot_tensor(
 #
 # Note also that to improve the training and reduce overfitting, we can add a random shift to the cropping function. This means that the bounding box around the [hippocampus](https://en.wikipedia.org/wiki/Hippocampus) may be shifted by a limited amount of voxels in each of the three directions.
 #
-# Let's generate our dataset:
+# Let's generate our dataset with the [generate_cropped_hc_dataset](https://now-2023.readthedocs.io/en/latest/modules/generated/now_2023.data_generation.generate_cropped_hc_dataset.html#now_2023.data_generation.generate_cropped_hc_dataset) function from the [now-2023](https://now-2023.readthedocs.io/en/latest/index.html) library.
 
 # %%
 from now_2023.data_generation import generate_cropped_hc_dataset
@@ -302,7 +317,9 @@ generate_cropped_hc_dataset(
 # %% [markdown]
 # As you can see, we have one tensor image for each subject, representing the extracted left hippocampus.
 #
-# Let's take a look at some of these images. To do so, you can use the `plot_hc()` function from the `now_2023` library which is a wrapper around the `plot_tensor()` function you used before. Again, feel free to play with the parameters to view different slices or different subjects: 
+# Let's take a look at some of these images. To do so, you can use the [plot_hc](https://now-2023.readthedocs.io/en/latest/modules/generated/now_2023.plotting.plot_hc.html) function from the [now-2023](https://now-2023.readthedocs.io/en/latest/index.html) library which is a wrapper around the [plot_tensor](https://now-2023.readthedocs.io/en/latest/modules/generated/now_2023.plotting.plot_tensor.html) function you used before.
+#
+# Again, feel free to play with the parameters to view different slices or different subjects: 
 
 # %%
 from now_2023.plotting import plot_hc
@@ -387,7 +404,7 @@ valid_df.to_csv("validation.csv")
 # %% [markdown]
 # We won't go into the details here, but the main idea is that this lock file is what [DVC](https://dvc.org) uses to know whether it should re-run a given stage given the state of the current workspace. It basically does this by computing the hash values of the stage dependencies and outputs and comparing these values to the ones in this file. If there is at least one mismatch, then the stage should be run again, otherwise [DVC](https://dvc.org) will use the cached inputs and outputs.
 #
-# Note that these new files (`dvc.yaml` and `dvc.lock`) are still very small files which size does not depend on the input data size. This means that we are totally fine versioning them with Git, and this is precisely what [DVC](https://dvc.org) is telling us to do here.
+# Note that these new files (`dvc.yaml` and `dvc.lock`) are still very small files which size does not depend on the input data size. This means that we are totally fine versioning them with [Git](https://git-scm.com), and this is precisely what [DVC](https://dvc.org) is telling us to do here.
 #
 # Let's add the data with [dvc add](https://dvc.org/doc/command-reference/add) (we still haven't done that...), and do the same with [Git](https://git-scm.com) for the files we have generated (`dvc.yaml`, `dvc.lock`, `data.dvc`), and modified (`.gitignore`):
 
@@ -413,7 +430,7 @@ valid_df.to_csv("validation.csv")
 # %% [markdown]
 # ### Train the model
 #
-# We propose here to use a convolutional neural network model to make our prediction. Again, we won't go into the architectural details of this model as this isn't the objective of this tutorial.
+# We propose here to use a convolutional neural network model to make our prediction. Again, we won't go into the architectural details of this model as this isn't the objective of this tutorial. Instead, we will use the [CNNModel](https://now-2023.readthedocs.io/en/latest/modules/generated/now_2023.models.CNNModel.html#now_2023.models.CNNModel) from the [now-2023](https://now-2023.readthedocs.io/en/latest/index.html) library.
 #
 # The network model requires some hyper-parameters:
 #
@@ -467,9 +484,7 @@ train_df = pd.read_csv("train.csv")
 valid_df = pd.read_csv("validation.csv")
 
 # %% [markdown]
-# At this point, we have everything we need to instantiate and train our network model.
-#
-# We use the `CNNModel` from the `now_2023` library:
+# At this point, we have everything we need to instantiate and train our network model:
 
 # %%
 # %%writefile -a train.py
