@@ -24,13 +24,13 @@ $ pip install -r ./jupyter-book/requirements.txt
 
 ## Schedule
 
-09:30-10:00 - [Introduction and setup](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/preamble.html)
-10:00-10:15 - [Introduction to Git](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/code_versioning_intro.html)
-10:15-11:00 - [Version your code with Git](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/code_versionning.html)
-11:00-11:15 - Break
-11:15-11:30 - [Introduction to DVC](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/data_versionning_intro.html)
-11:30-12:00 - [Version code and data with DVC](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/data_versionning.html)
-12:00-12:30 - [Version your experiments as data pipelines](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/data_versionning_2.html)
+- *09:00-09:30* - [Introduction and setup](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/preamble.html)
+- *09:30-09:45* - [Introduction to Git](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/code_versioning_intro.html)
+- *09:45-10:30* - [Version your code with Git](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/code_versionning.html)
+- *10:30-10:45* - Break
+- *10:45-11:00* - [Introduction to DVC](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/data_versionning_intro.html)
+- *11:00-11:30* - [Version code and data with DVC](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/data_versionning.html)
+- *11:30-12:00* - [Version your experiments as data pipelines](https://aramislab.paris.inria.fr/workshops/NOW/2023/notebooks/data_versionning_2.html)
 
 ## Contributing
 
