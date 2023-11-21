@@ -72,7 +72,16 @@
 #
 # In other words, you need both [Git](https://git-scm.com) and [DVC](https://dvc.org) to manage both code and data.
 #
-# To initialize a [DVC](https://dvc.org) repository, we first need to be within a [Git](https://git-scm.com)-initialized repository, so let's do that:
+# To initialize a [DVC](https://dvc.org) repository, we first need to be within a [Git](https://git-scm.com)-initialized repository, so let's do that!
+#
+# ```{warning}
+# If you are running this notebook on Collab, or if you are using an old version of Git, you need to run the following cell which will make sure your default branch is nammed `main` and not `master` as this default was changed a couple years ago.
+#
+# Otherwise, you would have to change `main` to `master` manually in all the commands of this notebook.
+# ```
+
+# %%
+# ! git config --global init.defaultBranch main
 
 # %%
 # ! git init

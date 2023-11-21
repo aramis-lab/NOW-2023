@@ -62,7 +62,16 @@
 #
 # Since this is a new notebook meant to be independant from the notebooks of the first chapters, we will start a new project from scratch.
 #
-# Start by configuring the [Git](https://git-scm.com) and [DVC](https://dvc.org) repo:
+# Start by configuring the [Git](https://git-scm.com) and [DVC](https://dvc.org) repo.
+#
+# ```{warning}
+# If you are running this notebook on Collab, or if you are using an old version of Git, you need to run the following cell which will make sure your default branch is nammed `main` and not `master` as this default was changed a couple years ago.
+#
+# Otherwise, you would have to change `main` to `master` manually in all the commands of this notebook.
+# ```
+
+# %%
+# ! git config --global init.defaultBranch main
 
 # %%
 # ! git init
