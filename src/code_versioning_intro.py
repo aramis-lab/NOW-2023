@@ -44,6 +44,8 @@
 # %% [markdown]
 # ## Local vs. remote
 #
+# <img src="https://www.cs.swarthmore.edu/~adanner/help/git/git-repos.svg">
+#
 # There is a difference between:
 #
 # - What is in your online repository (remote)?
@@ -165,6 +167,11 @@ Image(filename="../images/git-workflow.png")
 Image(filename="../images/git-branch-1.png")
 
 # %% [markdown]
+# ```{note}
+# Each circle in the graph above represents a commit. Each commit points to its parent commit.
+# ```
+#
+#
 # You can list the different branches and verify on which branch you are with the [git branch](https://git-scm.com/docs/git-branch) command:
 #
 # ```
