@@ -145,6 +145,8 @@
 __pycache__
 .DS_Store
 .ipynb_checkpoints
+.config
+sample_data
 
 # %%
 # ! git add .gitignore

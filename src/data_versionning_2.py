@@ -92,6 +92,9 @@
 __pycache__
 .DS_Store
 .ipynb_checkpoints
+.config
+OASIS-1-dataset*
+sample_data
 
 # %% [markdown]
 # ## Getting the input dataset
