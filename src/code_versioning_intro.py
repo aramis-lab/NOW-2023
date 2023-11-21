@@ -13,28 +13,28 @@
 # ---
 
 # %% [markdown]
-# # Chapter 1 : Introduction to code versioning
+# # Chapter 1: Introduction to code versioning
 #
 # The objective of this chapter is to give a brief overview of [Git](https://git-scm.com) and the main concepts behind its basic usage.
 #
-# We will use these concepts in the next chapter thoughout the development of a small Python library.
+# We will use these concepts in the next chapter throughout the development of a small Python library.
 #
 # ```{note}
 # The content of this chapter has been adapted from a Git tutorial made by *Mathilde Lannes* and *Séverine Candelier* from the ICM.
 # ```
 
 # %% [markdown]
-# ## What is git ?
+# ## What is git?
 #
 # - [Git](https://git-scm.com) is a version-control system. The purpose of [Git](https://git-scm.com) is to manage a code project or a set of files, as they **change over time**.
 # - [Git](https://git-scm.com) stores this information in a data structure called a **repository**.
-# - The [Git](https://git-scm.com) repository is stored in the same directory as the project itself, in a hidden subdirecotry called `.git`.
+# - The [Git](https://git-scm.com) repository is stored in the same directory as the project itself, in a hidden subdirectory called `.git`.
 
 # %% [markdown]
-# ## Why do you need git ?
+# ## Why do you need git?
 #
 # - Version control softwares keep track of every modification to the code.
-# - In case of error, you can go back in time.
+# - In case of an error, you can go back in time.
 # - A whole team can work on the same project.
 # - No fear of "deleting everything" by accident.
 # - Your code is constantly backed up on a server.
@@ -46,8 +46,8 @@
 #
 # There is a difference between:
 #
-# - What is in your online repository (remote)
-# - What is in your local repository.
+# - What is in your online repository (remote)?
+# - What is in your local repository?
 #
 # There won't be any modification on the remote server ([Github](https://github.com), [Gitlab](https://gitlab.com)...) until you publish it.
 #
@@ -56,7 +56,7 @@
 # ```
 
 # %% [markdown]
-# ## What is a commit ?
+# ## What is a commit?
 #
 # It is a snapshot of modified code.
 
@@ -102,8 +102,7 @@ Image(filename="../images/git-workflow.png")
 #
 # You can compare things with the [git diff](https://git-scm.com/docs/git-diff) command. The arguments of the command depend on what you want to compare:
 #
-# - changes between the working tree and the index (or another tree)
-# - changes between the index and a tree
+# - changes between the working tree and the index 
 # - changes between two trees
 # - changes resulting from a merge
 # - changes between two blob objects
@@ -122,7 +121,7 @@ Image(filename="../images/git-workflow.png")
 # $ git push
 # ```
 #
-# ### Getting latest commits from your co-workers
+# ### Getting the latest commits from your co-workers
 #
 # You can retrieve locally what is on a remote with the [git pull](https://git-scm.com/docs/git-pull) command. When you pull, you are merging the version of the remote inside your local repository:
 #
@@ -133,12 +132,14 @@ Image(filename="../images/git-workflow.png")
 # %% [markdown]
 # ### Cancel what you have done
 #
-# You can change a modified file in the working directory to the HEAD version with the [git checkout](https://git-scm.com/docs/git-checkout) command and the file name as argument:
+# You can change a modified file in the working directory to the HEAD version with the [git restore](https://git-scm.com/docs/git-restore) command and the file name as argument:
 #
 # ```
-# $ git checkout myfile
+# $ git restore myfile
 # ```
-#
+# You can still use the [git checkout](https://git-scm.com/docs/git-checkout) command if you're used to.
+
+# %% [markdown]
 # You can create a commit to undo your last commit(s) with the [git revert](https://git-scm.com/docs/git-revert) command:
 #
 # ```
@@ -154,10 +155,10 @@ Image(filename="../images/git-workflow.png")
 #
 # ### How to use branches
 #
-# To create a new branch, you can use the [git checkout](https://git-scm.com/docs/git-checkout) command with the `b` option:
+# To create a new branch, you can use the [git switch](https://git-scm.com/docs/git-switch) command with the `-c` option:
 #
 # ```
-# $ git checkout -b mybranch
+# $ git switch -c mybranch
 # ```
 
 # %%
@@ -198,7 +199,7 @@ Image(filename="../images/git-branch-3.png")
 # You can perform a merge with the [git merge](https://git-scm.com/docs/git-merge) command:
 #
 # ```
-# $ git checkout main
+# $ git switch main
 # $ git merge mybranch
 # ```
 
