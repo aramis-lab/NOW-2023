@@ -36,14 +36,14 @@
 # %%
 # ! git init
 
-# %% [mardown]
+# %% [markdown]
 # Configure your git account using simple configuration files
 # 3 levels:
 #   * __local__ : `<local copy>/.git/config`, by default
 #   * __global__ : `~/.gitconfig`, option `--global`
 #   * __system__ : `/etc/gitconfig`, option `--system`
 
-# Either edit the files directly, or use `git config` command
+# Either edit the files directly or use `git config` command
 # %% [markdown]
 # To configure your user name and email address, you need to use the [git config](https://git-scm.com/docs/git-config) command:
 
@@ -69,6 +69,8 @@
 
 # %%
 # ! git diff --staged
+
+# %%
 # ! git diff
 # %% [markdown]
 # Commit all changes in the `README.md` file (both in staging and local) and check one last time the state of the local copy:
@@ -122,7 +124,7 @@ def test_add(a, b, res):
 
     assert add(a, b) == res
 # %% [markdown]
-# Use `pytest` (install it using `pip install pytest`) to run the tests, verify 
+# Use `pytest` to run the tests, verify 
 # that they pass and then commit `test_myfuncs.py` (and only this one!):
 # %%
 # ! pytest test_myfuncs.py
@@ -203,7 +205,6 @@ def test_sub(a, b, res):
 
     assert sub(a, b) == res
 
-
 # %%
 # ! pytest -v
 
@@ -217,13 +218,11 @@ def test_sub(a, b, res):
 # %%
 # ! git status
 
-# %%
-# ! git diff  # This command should return nothing
-
 # %% [markdown]
 # Verify that the changes added in the staging are the ones expected:
 # %%
 # ! git diff --staged
+
 # %% [markdown]
 # Remove the changes from the staging area:
 # %%
@@ -236,12 +235,11 @@ def test_sub(a, b, res):
 # ! git diff
 
 # %% [markdown]
-# Repeat 4. and 5. but this time completely revert the changes added to the staging area (`git reset --hard`)
-# %% [markdown]
 # Apply one last time the changes above to the `test_myfuncs.py` file and commit them:
 # %%
 # ! git add test_myfuncs.py
 # ! git commit -m "add test function for sub"
+
 # %% [markdown]
 # Check the diff contained in this last commit:
 # %%
@@ -291,7 +289,7 @@ def test_sub(a, b, res):
 # ! git remote -v
 
 # %% [markdown]
-# Manipulating branches
+# ## Manipulating branches
 
 # %% [markdown]
 # Move back to the `dummymaths` directory and list your local and remote branches:
@@ -299,7 +297,7 @@ def test_sub(a, b, res):
 # %cd ../dummymaths
 # ! git branch
 # %%
-# ! git branch -a
+# ! git branch --all
 
 # %% [markdown]
 # Create a branch called `multiply` and list the branches again:
@@ -345,7 +343,7 @@ def multiply(a, b):
 # Now switch back to the `main` branch:
 
 # %%
-# ! git checkout main
+# ! git switch main
 
 # %% [markdown]
 # And add a test function to `test_myfuncs.py` to test our new multiply function:
@@ -378,6 +376,7 @@ def test_multiply(a, b, res):
 # The branches are diverging
 # Let's see how to merge them and to fix potential conflicts.
 
+
 # %% [markdown]
 # ## Merging branches
 #
@@ -388,11 +387,11 @@ def test_multiply(a, b, res):
 # ### The fast-forward merge
 
 # %% [markdown]
-# Let's create the `divide`and the `todo` branches from `main`, which is your current branch:
+# Let's create the `divide and the `todo` branches from `main`, which is your current branch:
 # %%
 # ! git branch divide
 # %%
-# ! git checkout -b todo
+# ! git switch -c todo
 
 # %%
 # ! git branch
