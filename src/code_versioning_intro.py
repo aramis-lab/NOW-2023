@@ -199,7 +199,7 @@ Image(filename="../images/git-branch-3.png")
 # %% [markdown]
 # ## What is a merge
 #
-# Merging is automatic if different portions of the code have been modified.
+# A merge is the fusion of two branches and merging is automatic if different portions of the code have been modified.
 #
 # However, you must resolve the conflicts if the SAME portions of code have been touched.
 #
