@@ -182,8 +182,8 @@ sample_data
 # Let's start **VERY** simple with a dataset in the form of a single TSV file. This file contains one row per subject and four columns:
 #
 # - the **patient ID** which is just a string identifier
-# - the **volume** of this patient's **left hypocampus** (this will be our first predictive feature)
-# - the **volume** of this patient's **right hypocampus** (this will be second first predictive feature)
+# - the **volume** of this patient's **left hippocampus** (this will be our first predictive feature)
+# - the **volume** of this patient's **right hippocampus** (this will be second first predictive feature)
 # - the **diagnosis** of the patient: "AD" if the patient has [Alzheimer's disease](https://en.wikipedia.org/wiki/Alzheimer%27s_disease) or "CN" for control (this will be out target)
 #
 # Let's download the data first. For this, we will use a special [DVC](https://dvc.org) command: [dvc get](https://dvc.org/doc/command-reference/get):
